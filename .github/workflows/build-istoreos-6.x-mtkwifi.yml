@@ -55,7 +55,7 @@ jobs:
       run: |
         mkdir -p ${GITHUB_WORKSPACE}/workdir
         chmod 755 ${GITHUB_WORKSPACE}/workdir
-        echo "WORKDIR=$PWD" >> $GITHUB_ENV
+        echo "WORKDIR_PATH=$PWD" >> $GITHUB_ENV
 
     - name: 检查服务器配置
       run: |
@@ -85,7 +85,7 @@ jobs:
         sudo rm -rf get-pip.py
         sudo pip install pyelftools
         echo "------------------------------- 清理Docker镜像和软件 -------------------------------"
-        docker rmi `docker images -q`
+        [ -n "$(docker images -q)" ] && docker rmi $(docker images -q)
         docker image prune -a -f
         sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* adoptopenjdk* mysql* php* mongodb* dotnet* moby* snapd* android* || true
         sudo -E apt-get -qq autoremove --purge
@@ -94,17 +94,17 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
 
     - name: 克隆源码
-      working-directory: ${{ env.WORKDIR }}/workdir
+      working-directory: ${{ env.WORKDIR_PATH }}/workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b ${{ matrix.REPO_BRANCH }} openwrt
-        ln -sf ${{ env.WORKDIR }}/workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        ln -sf ${{ env.WORKDIR_PATH }}/workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
     - name: 缓存构建动作
       uses: klever1988/cachewrtbuild@main
       with:
         ccache: 'true'
-        mixkey: ${{ matrix.os }}-${{ matrix.ARCHITECTURE }}-${{ matrix.REPO_BRANCH }}
+        mixkey: ${{ matrix.os }}-${{ matrix.ARCHITECTURE }}-${{ matrix.REPO_BRANCH }}-mtkwifi
         prefix: ${{ github.workspace }}/openwrt
 
     - name: 加载自定义 feeds
@@ -135,11 +135,12 @@ jobs:
         # cp --preserve=all -r $GITHUB_WORKSPACE/configfiles/userpatches/zhoufuli/* openwrt/
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE_PATH ] && mv $CONFIG_FILE_PATH openwrt/$CONFIG_FILE
+        sed -i -E 's/^(CONFIG_TARGET_DEVICE_rockchip_armv8_DEVICE_[_a-zA-Z0-9-]+)=y$/# \1 is not set/' openwrt/.config
         getconfig=$(cat ${GITHUB_WORKSPACE}/armv8/g68_mtk_wifi.config)
-        echo "$getconfig" >> openwrt/$CONFIG_FILE
+        echo "$getconfig" >> openwrt/.config
         cat "${GITHUB_WORKSPACE}/configfiles/config-6.6.local" >> openwrt/target/linux/rockchip/armv8/config-6.6
-        cat openwrt/.config
-        cat openwrt/target/linux/rockchip/armv8/config-6.6
+        # cat openwrt/.config
+        # cat openwrt/target/linux/rockchip/armv8/config-6.6
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
