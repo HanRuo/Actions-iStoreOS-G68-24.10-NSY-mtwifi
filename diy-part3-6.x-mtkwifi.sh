@@ -74,3 +74,5 @@ tar -xvf rtl8367b.tar.gz
 # 复制dts设备树文件到指定目录下
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3588-orangepi-5-plus.dts target/linux/rockchip/dts/rk3588/rk3588-orangepi-5-plus.dts
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-nsy-g68-plus.dts target/linux/rockchip/dts/rk3568/rk3568-nsy-g68-plus.dts
+cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu.dtsi
+cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu-rk809.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu-rk809.dtsi
