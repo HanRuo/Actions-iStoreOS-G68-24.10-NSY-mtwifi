@@ -50,7 +50,7 @@
 		interrupts = <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>;
 		clocks = <&cru ACLK_VPU_MMU>, <&cru HCLK_VPU_MMU>;
 		clock-names = "aclk", "hclk";
-		#iommu-cells = <0x0>;
+		#iommu-cells = <0>;
 		status = "okay";
 	};
 	// ========== vpu_mmu定义结束 ==========
