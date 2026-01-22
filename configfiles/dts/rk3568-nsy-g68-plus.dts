@@ -50,7 +50,7 @@
 		interrupts = <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>;
 		clocks = <&cru ACLK_VPU_MMU>, <&cru HCLK_VPU_MMU>;
 		clock-names = "aclk", "hclk";
-		#iommu-cells = <0>;
+		#iommu-cells = <1>;
 		status = "okay";
 	};
 	// ========== vpu_mmu定义结束 ==========
@@ -948,7 +948,7 @@
 	status = "okay";
 	vpu-supply = <&vdda0v9_image>;
 	rkvdec-supply = <&vcca1v8_image>;
-	iommus = <&vpu_mmu>;
+	iommus = <&vpu_mmu 0>;
 	memory-region = <&cma>;
 };
 
@@ -958,7 +958,7 @@
 
 &vepu {
 	status = "okay";
-	iommus = <&vpu_mmu>;
+	iommus = <&vpu_mmu 0>;
 	vpu-supply = <&vdda0v9_image>;
 	rkvenc-supply = <&vcca1v8_image>;
 };
