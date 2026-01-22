@@ -11,6 +11,9 @@
 #include <rockchip/rk3568.dtsi>
 #include "rk3568-ip.dtsi"
 #include "rk3568-ip-rk809.dtsi"
+/* 引入RK3568通用GPU/VPU配置，确保硬解驱动适配 */
+#include "rk3568-vngpu.dtsi"
+#include "rk3568-vngpu-rk809.dtsi"
 
 / {
 	model = "NSY-G68 AX3000 Router";
@@ -1083,7 +1086,3 @@
 	status = "okay";
 	vref-supply = <&vcc1v8_adc>;
 };
-
-/* 引入RK3568通用GPU/VPU配置，确保硬解驱动适配 */
-#include "rk3568-vngpu.dtsi"
-#include "rk3568-vngpu-rk809.dtsi"
