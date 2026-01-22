@@ -48,7 +48,7 @@
 		clock-names = "aclk", "hclk";
 		#iommu-cells = <1>;
 		status = "okay";
-	};
+		};
 
 	fiq-debugger {
 		compatible = "rockchip,fiq-debugger";
