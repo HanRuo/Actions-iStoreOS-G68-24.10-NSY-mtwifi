@@ -24,26 +24,22 @@
 
 	chosen: chosen {
 		stdout-path = "serial2:1500000n8";
-		bootargs-append = "cma=256M coherent_pool=32M"; // 新增这一行
+		bootargs-append = "cma=256M coherent_pool=32M"; 
 	};
 	
-	// ========== 新增的reserved-memory节点 ==========
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
 
-		// 为VPU/CMA预留256MB内存（适配G68，不指定固定地址）
 		cma: cma {
 			compatible = "shared-dma-pool";
 			reusable;
-			size = <0x0 0x10000000>; // 256MB
+			size = <0x0 0x10000000>; 
 			linux,cma-default;
 		};
 	};
-	// ========== 新增结束 ==========
 
-	// ========== 关键修复：完整定义vpu_mmu节点 ==========
 	vpu_mmu: iommu@ff620000 {
 		compatible = "rockchip,rk3568-iommu";
 		reg = <0x0 0xff620000 0x0 0x10000>;
@@ -53,7 +49,6 @@
 		#iommu-cells = <1>;
 		status = "okay";
 	};
-	// ========== vpu_mmu定义结束 ==========
 
 	fiq-debugger {
 		compatible = "rockchip,fiq-debugger";
