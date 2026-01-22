@@ -8,12 +8,14 @@
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/soc/rockchip,vop2.h>
 #include <dt-bindings/pinctrl/rockchip.h>
+#include <dt-bindings/clock/rk3568-cru.h>
+#include <dt-bindings/power/rk3568-power.h>
 #include <rockchip/rk3568.dtsi>
-#include "rk3568-ip.dtsi"
-#include "rk3568-ip-rk809.dtsi"
-/* 引入RK3568通用GPU/VPU配置，确保硬解驱动适配 */
 #include "rk3568-vngpu.dtsi"
 #include "rk3568-vngpu-rk809.dtsi"
+#include "rk3568-ip.dtsi"
+#include "rk3568-ip-rk809.dtsi"
+#include "rk3568-ramoops.dtsi"
 
 / {
 	model = "NSY-G68 AX3000 Router";
@@ -27,7 +29,7 @@
 
 	chosen: chosen {
 		stdout-path = "serial2:1500000n8";
-		bootargs-append = "cma=256M coherent_pool=32M"; 
+		bootargs-append = "cma=256M coherent_pool=32M";
 	};
 	
 	reserved-memory {
@@ -42,16 +44,6 @@
 			linux,cma-default;
 		};
 	};
-
-	vpu_mmu: iommu@ff620000 {
-		compatible = "rockchip,rk3568-iommu";
-		reg = <0x0 0xff620000 0x0 0x10000>;
-		interrupts = <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&cru ACLK_VPU_MMU>, <&cru HCLK_VPU_MMU>;
-		clock-names = "aclk", "hclk";
-		#iommu-cells = <1>;
-		status = "okay";
-		};
 
 	fiq-debugger {
 		compatible = "rockchip,fiq-debugger";
@@ -933,32 +925,43 @@
 	status = "disable";
 };
 
-&power {
-	status = "okay";
-};
-
-&gpu {
-	mali-supply = <&vdd_gpu>;
-	status = "okay";
-};
-
-&vpu {
+/* 仅覆盖供电和状态（dtsi已定义节点结构） */
+&vdpu {
 	status = "okay";
 	vpu-supply = <&vdda0v9_image>;
 	rkvdec-supply = <&vcca1v8_image>;
-	iommus = <&vpu_mmu 0>;
-	memory-region = <&cma>;
-};
-
-&rga {
-	status = "okay";
 };
 
 &vepu {
 	status = "okay";
-	iommus = <&vpu_mmu 0>;
 	vpu-supply = <&vdda0v9_image>;
 	rkvenc-supply = <&vcca1v8_image>;
+};
+
+/* 启用所有MMU（dtsi已定义，只需开status） */
+&vdpu_mmu { status = "okay"; };
+&vepu_mmu { status = "okay"; };
+&rkvdec_mmu { status = "okay"; };
+&rkvenc_mmu { status = "okay"; };
+&jpegd_mmu { status = "okay"; };
+&iep_mmu { status = "okay"; };
+
+/* 启用服务模块 */
+&mpp_srv { status = "okay"; };
+&rk_rga { status = "okay"; };
+&jpegd { status = "okay"; };
+&rkvdec { status = "okay"; };
+&rkvenc { status = "okay"; };
+
+/* GPU电源域补充 */
+&gpu {
+	mali-supply = <&vdd_gpu>;
+	power-domains = <&power RK3568_PD_GPU>;
+	status = "okay";
+};
+
+&power {
+	status = "okay";
 };
 
 
