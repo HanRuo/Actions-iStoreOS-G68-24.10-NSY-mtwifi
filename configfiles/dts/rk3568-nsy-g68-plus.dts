@@ -9,9 +9,10 @@
 #include <dt-bindings/soc/rockchip,vop2.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 #include <rockchip/rk3568.dtsi>
-#include "rk3568-vngpu.dtsi"
 #include "rk3568-ip.dtsi"
 #include "rk3568-ip-rk809.dtsi"
+#include "rk3568-ramoops.dtsi"
+#include "rk3568-vngpu.dtsi"
 
 / {
 	model = "NSY-G68 AX3000 Router";
@@ -907,42 +908,38 @@
 	status = "disable";
 };
 
-/* 仅覆盖供电和状态（dtsi已定义节点结构） */
-&vdpu {
+&power {
 	status = "okay";
 };
 
-&vepu {
-	status = "okay";
-};
-
-/* IOMMU（临时禁用测试） */
-&vdpu_mmu { status = "disabled"; };
-&vepu_mmu { status = "disabled"; };
-&rkvdec_mmu { status = "disabled"; };
-&rkvenc_mmu { status = "disabled"; };
-&jpegd_mmu { status = "disabled"; };
-&iep_mmu { status = "disabled"; };
-
-/* 启用服务模块 */
-&mpp_srv { status = "okay"; };
-&rk_rga { status = "okay"; };
-&jpegd { status = "okay"; };
-&rkvdec { status = "okay"; };
-&rkvenc { status = "okay"; };
-
-/* GPU电源域补充 */
 &gpu {
 	mali-supply = <&vdd_gpu>;
 	status = "okay";
 };
 
-&power {
+&rknpu {
+	npu-supply = <&vdd_npu>;
 	status = "okay";
 };
 
+&mpp_srv {
+	status = "okay";
+};
 
-&vop {
+&rkvdec {
+	vdec-supply = <&vdd_logic>;
+	status = "okay";
+};
+
+&rkvenc {
+	status = "okay";
+};
+
+&vdpu {
+	status = "okay";
+};
+
+&rk_rga {
 	status = "okay";
 };
 
