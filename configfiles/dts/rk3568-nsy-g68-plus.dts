@@ -12,10 +12,8 @@
 #include <dt-bindings/power/rk3568-power.h>
 #include <rockchip/rk3568.dtsi>
 #include "rk3568-vngpu.dtsi"
-#include "rk3568-vngpu-rk809.dtsi"
 #include "rk3568-ip.dtsi"
 #include "rk3568-ip-rk809.dtsi"
-#include "rk3568-ramoops.dtsi"
 
 / {
 	model = "NSY-G68 AX3000 Router";
@@ -36,11 +34,10 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
-
-		cma: cma {
+		cma: cma@b0000000 { /* 指定b0000000-10000000 */
 			compatible = "shared-dma-pool";
 			reusable;
-			size = <0x0 0x10000000>; 
+			reg = <0x0 0xb0000000 0x0 0x10000000>;
 			linux,cma-default;
 		};
 	};
@@ -938,13 +935,13 @@
 	rkvenc-supply = <&vcca1v8_image>;
 };
 
-/* 启用所有MMU（dtsi已定义，只需开status） */
-&vdpu_mmu { status = "okay"; };
-&vepu_mmu { status = "okay"; };
-&rkvdec_mmu { status = "okay"; };
-&rkvenc_mmu { status = "okay"; };
-&jpegd_mmu { status = "okay"; };
-&iep_mmu { status = "okay"; };
+/* IOMMU（临时禁用测试） */
+&vdpu_mmu { status = "disabled"; };
+&vepu_mmu { status = "disabled"; };
+&rkvdec_mmu { status = "disabled"; };
+&rkvenc_mmu { status = "disabled"; };
+&jpegd_mmu { status = "disabled"; };
+&iep_mmu { status = "disabled"; };
 
 /* 启用服务模块 */
 &mpp_srv { status = "okay"; };
