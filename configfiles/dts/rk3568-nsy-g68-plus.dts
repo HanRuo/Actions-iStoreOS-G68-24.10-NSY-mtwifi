@@ -8,8 +8,6 @@
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/soc/rockchip,vop2.h>
 #include <dt-bindings/pinctrl/rockchip.h>
-#include <dt-bindings/clock/rk3568-cru.h>
-#include <dt-bindings/power/rk3568-power.h>
 #include <rockchip/rk3568.dtsi>
 #include "rk3568-vngpu.dtsi"
 #include "rk3568-ip.dtsi"
@@ -27,19 +25,6 @@
 
 	chosen: chosen {
 		stdout-path = "serial2:1500000n8";
-		bootargs-append = "cma=256M coherent_pool=32M";
-	};
-	
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-		cma: cma@b0000000 { /* 指定b0000000-10000000 */
-			compatible = "shared-dma-pool";
-			reusable;
-			reg = <0x0 0xb0000000 0x0 0x10000000>;
-			linux,cma-default;
-		};
 	};
 
 	fiq-debugger {
@@ -925,14 +910,10 @@
 /* 仅覆盖供电和状态（dtsi已定义节点结构） */
 &vdpu {
 	status = "okay";
-	vpu-supply = <&vdda0v9_image>;
-	rkvdec-supply = <&vcca1v8_image>;
 };
 
 &vepu {
 	status = "okay";
-	vpu-supply = <&vdda0v9_image>;
-	rkvenc-supply = <&vcca1v8_image>;
 };
 
 /* IOMMU（临时禁用测试） */
