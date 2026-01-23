@@ -953,7 +953,6 @@
 /* GPU电源域补充 */
 &gpu {
 	mali-supply = <&vdd_gpu>;
-	power-domains = <&power RK3568_PD_GPU>;
 	status = "okay";
 };
 
