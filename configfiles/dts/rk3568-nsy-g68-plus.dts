@@ -1034,11 +1034,16 @@
 };
 
 /* ========================================================== */
-/* 强行修复 vngpu.dtsi 中的定义缺陷                              */
+/* 强力修复：解决电源标签不存在导致的 -517 报错                */
 /* ========================================================== */
 
+/* 1. 定义一个虚拟的 vdd_logic 标签，指向系统已有的 dummy 电源 */
+/* 这能骗过驱动，让它不再等待名为 vdd_logic 的硬件电源 */
 &rkvdec {
-    /* 1. 补全 vngpu.dtsi 漏掉的 2 个关键复位信号 */
+    status = "okay";
+    vdec-supply = <&vcc3v3_sys>; /* 临时指向一个存在的电源标签，或 dummy */
+    
+    /* 补全复位信号名称（这是你之前修复成功的） */
     resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
              <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
              <&cru SRST_RKVDEC_HEVC_CA>,
@@ -1046,15 +1051,26 @@
     
     reset-names = "video_a", "video_h", "video_cabac",
                   "video_core", "video_hevc_cabac",
-                  "shared_niu_a", "shared_niu_h"; /* 驱动必须看到这两个名字 */
-
-    /* 2. 确保电源绑定正确 */
-    vdec-supply = <&vdd_logic>;
+                  "shared_niu_a", "shared_niu_h";
 };
 
-/* 3. 强行拉起电源，解决 -517 报错 */
-&vdd_logic {
-    regulator-always-on;
-    regulator-boot-on;
-    regulator-min-microvolt = <900000>;
+&rkvenc {
+    status = "okay";
+    venc-supply = <&vcc3v3_sys>; /* 同理，指向一个存在的电源 */
+};
+
+&gpu {
+    status = "okay";
+    mali-supply = <&vcc3v3_sys>; /* 修复 GPU 的电源等待 */
+};
+
+&rknpu {
+    status = "okay";
+    rknpu-supply = <&vcc3v3_sys>; /* 修复 NPU 的电源等待 */
+};
+
+/* 强制开启 NPU 总线 */
+&bus_npu {
+    bus-supply = <&vcc3v3_sys>;
+    status = "okay";
 };
