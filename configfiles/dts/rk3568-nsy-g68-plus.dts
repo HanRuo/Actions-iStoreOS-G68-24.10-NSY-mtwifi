@@ -912,15 +912,6 @@
 	status = "okay";
 };
 
-&gpu {
-	mali-supply = <&vdd_gpu>;
-	status = "okay";
-};
-
-&rknpu {
-	npu-supply = <&vdd_npu>;
-	status = "okay";
-};
 
 &mpp_srv {
 	status = "okay";
@@ -928,10 +919,6 @@
 
 &rkvdec {
 	vdec-supply = <&vdd_logic>;
-	status = "okay";
-};
-
-&rkvenc {
 	status = "okay";
 };
 
