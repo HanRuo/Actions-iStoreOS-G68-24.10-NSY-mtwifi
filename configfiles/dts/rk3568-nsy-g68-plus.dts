@@ -9,10 +9,10 @@
 #include <dt-bindings/soc/rockchip,vop2.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 #include <rockchip/rk3568.dtsi>
+#include "rk3568-vngpu.dtsi"
 #include "rk3568-ip.dtsi"
 #include "rk3568-ip-rk809.dtsi"
 #include "rk3568-ramoops.dtsi"
-#include "rk3568-vngpu.dtsi"
 
 / {
 	model = "NSY-G68 AX3000 Router";
@@ -1031,4 +1031,15 @@
 &saradc {
 	status = "okay";
 	vref-supply = <&vcc1v8_adc>;
+};
+
+/* 补齐 rkvdec 缺失的关键属性，解决 shared_niu 和 -517 报错 */
+&rkvdec {
+	vdec-supply = <&vdd_logic>;
+	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
+		 <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
+		 <&cru SRST_RKVDEC_HEVC_CA>;
+	reset-names = "video_a", "video_h", "video_cabac",
+		      "video_core", "video_hevc_cabac";
+	status = "okay";
 };
