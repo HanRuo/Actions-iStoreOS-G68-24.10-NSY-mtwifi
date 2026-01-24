@@ -1033,13 +1033,28 @@
 	vref-supply = <&vcc1v8_adc>;
 };
 
-/* 补齐 rkvdec 缺失的关键属性，解决 shared_niu 和 -517 报错 */
+/* ========================================================== */
+/* 强行修复 vngpu.dtsi 中的定义缺陷                              */
+/* ========================================================== */
+
 &rkvdec {
-	vdec-supply = <&vdd_logic>;
-	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
-		 <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
-		 <&cru SRST_RKVDEC_HEVC_CA>;
-	reset-names = "video_a", "video_h", "video_cabac",
-		      "video_core", "video_hevc_cabac";
-	status = "okay";
+    /* 1. 补全 vngpu.dtsi 漏掉的 2 个关键复位信号 */
+    resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
+             <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
+             <&cru SRST_RKVDEC_HEVC_CA>,
+             <&cru SRST_A_VPU_NIU>, <&cru SRST_H_VPU_NIU>;
+    
+    reset-names = "video_a", "video_h", "video_cabac",
+                  "video_core", "video_hevc_cabac",
+                  "shared_niu_a", "shared_niu_h"; /* 驱动必须看到这两个名字 */
+
+    /* 2. 确保电源绑定正确 */
+    vdec-supply = <&vdd_logic>;
+};
+
+/* 3. 强行拉起电源，解决 -517 报错 */
+&vdd_logic {
+    regulator-always-on;
+    regulator-boot-on;
+    regulator-min-microvolt = <900000>;
 };
