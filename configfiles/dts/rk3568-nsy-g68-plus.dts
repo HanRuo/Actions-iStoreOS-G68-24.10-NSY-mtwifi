@@ -378,7 +378,7 @@
 			};
 		};
 
-		regulators {
+	/*	regulators {
 
 			vdd_logic: DCDC_REG1 {
 				regulator-always-on;
@@ -393,7 +393,7 @@
 				regulator-state-mem {
 					regulator-off-in-suspend;
 				};
-			};
+			};	*/
 
 			vdd_gpu: DCDC_REG2 {
 				regulator-always-on;
