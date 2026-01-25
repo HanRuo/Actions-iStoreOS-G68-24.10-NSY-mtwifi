@@ -76,3 +76,9 @@ cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3588-orangepi-5-plus.dts target/linux/
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-nsy-g68-plus.dts target/linux/rockchip/dts/rk3568/rk3568-nsy-g68-plus.dts
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu.dtsi
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu-rk809.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu-rk809.dtsi
+
+# 强制开启 RK3568 电源管理驱动
+echo "CONFIG_REGULATOR=y" >> target/linux/rockchip/config-6.6
+echo "CONFIG_REGULATOR_FIXED_VOLTAGE=y" >> target/linux/rockchip/config-6.6
+echo "CONFIG_MFD_RK808=y" >> target/linux/rockchip/config-6.6
+echo "CONFIG_REGULATOR_RK808=y" >> target/linux/rockchip/config-6.6
