@@ -1037,23 +1037,24 @@
 /* 强力修复：解决电源标签不存在导致的 -517 报错                */
 /* ========================================================== */
 
-/* 1. 在根节点添加虚拟电源定义 */
 / {
-	fake_vdd_logic: fake-vdd-logic {
-		compatible = "regulator-fixed";
-		regulator-name = "vdd_logic";
-		regulator-always-on;
-		regulator-boot-on;
-		regulator-min-microvolt = <900000>;
-		regulator-max-microvolt = <900000>;
-	};
+    /* 这里的 vdd_logic 是标签(Label)，方便你在下方通过 &vdd_logic 引用 */
+    /* 这里的 vdd-logic 是节点名，必须唯一 */
+    vdd_logic: vdd-logic {
+        compatible = "regulator-fixed";
+        regulator-name = "vdd_logic"; // 内核里看到的名称
+        regulator-always-on;
+        regulator-boot-on;
+        regulator-min-microvolt = <900000>;
+        regulator-max-microvolt = <900000>;
+    };
 };
 
 /* 2. 修改各硬件节点引用该虚拟电源 */
 
 &{/soc/rkvdec@fdf80200} {
 	status = "okay";
-	vdec-supply = <&fake_vdd_logic>; /* 修改此处 */
+	vdec-supply = <&vdd_logic>; /* 修改此处 */
 	
 	/* 补全复位信号名称 */
 	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
@@ -1068,20 +1069,20 @@
 
 &rkvenc {
 	status = "okay";
-	venc-supply = <&fake_vdd_logic>; /* 修改此处 */
+	venc-supply = <&vdd_logic>; /* 修改此处 */
 };
 
 &gpu {
 	status = "okay";
-	mali-supply = <&fake_vdd_logic>; /* 修改此处 */
+	mali-supply = <&vdd_logic>; /* 修改此处 */
 };
 
 &rknpu {
 	status = "okay";
-	rknpu-supply = <&fake_vdd_logic>; /* 修改此处 */
+	rknpu-supply = <&vdd_logic>; /* 修改此处 */
 };
 
 &bus_npu {
 	status = "okay";
-	bus-supply = <&fake_vdd_logic>; /* 修改此处 */
+	bus-supply = <&vdd_logic>; /* 修改此处 */
 };
