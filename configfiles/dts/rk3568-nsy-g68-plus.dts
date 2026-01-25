@@ -378,22 +378,7 @@
 			};
 		};
 
-	/*	regulators {
-
-			vdd_logic: DCDC_REG1 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <500000>;
-				regulator-max-microvolt = <1350000>;
-				regulator-init-microvolt = <900000>;
-				regulator-ramp-delay = <6001>;
-				regulator-initial-mode = <2>;
-				regulator-name = "vdd_logic";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};	*/
+		regulators {
 
 			vdd_gpu: DCDC_REG2 {
 				regulator-always-on;
