@@ -77,38 +77,3 @@ cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-nsy-g68-plus.dts target/linux/roc
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu.dtsi
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu-rk809.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu-rk809.dtsi
 
-# ==========================================================
-# 强制开启 RK3568 电源管理及所有核心依赖驱动 (RK809 专用)
-# ==========================================================
-
-# 定义配置文件路径 (建议两个路径都写，确保万无一失)
-KCONFIGS="target/linux/rockchip/config-6.6 target/linux/rockchip/armv8/config-6.6"
-
-for KCONFIG in $KCONFIGS; do
-    [ -f "$KCONFIG" ] || continue
-
-    # 1. 清除旧的冲突配置 (防止存在 # CONFIG_xxx is not set 导致追加无效)
-    sed -i '/CONFIG_REGMAP_I2C/d' $KCONFIG
-    sed -i '/CONFIG_REGMAP_IRQ/d' $KCONFIG
-    sed -i '/CONFIG_MFD_CORE/d' $KCONFIG
-    sed -i '/CONFIG_MFD_RK808/d' $KCONFIG
-    sed -i '/CONFIG_REGULATOR/d' $KCONFIG
-    sed -i '/CONFIG_REGULATOR_RK808/d' $KCONFIG
-    sed -i '/CONFIG_REGULATOR_FIXED_VOLTAGE/d' $KCONFIG
-    sed -i '/CONFIG_I2C_RK3X/d' $KCONFIG
-
-    # 2. 追加全套满血驱动参数
-    echo "CONFIG_REGMAP_I2C=y" >> $KCONFIG
-    echo "CONFIG_REGMAP_IRQ=y" >> $KCONFIG
-    echo "CONFIG_MFD_CORE=y" >> $KCONFIG
-    echo "CONFIG_MFD_RK808=y" >> $KCONFIG
-    echo "CONFIG_REGULATOR=y" >> $KCONFIG
-    echo "CONFIG_REGULATOR_FIXED_VOLTAGE=y" >> $KCONFIG
-    echo "CONFIG_REGULATOR_RK808=y" >> $KCONFIG
-    echo "CONFIG_I2C_RK3X=y" >> $KCONFIG
-    
-    # 3. 开启硬件监控（通常 RK809 驱动需要它来报告电压状态）
-    echo "CONFIG_HWMON=y" >> $KCONFIG
-done
-
-# ==========================================================
