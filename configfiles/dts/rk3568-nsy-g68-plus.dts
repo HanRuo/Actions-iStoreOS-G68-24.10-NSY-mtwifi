@@ -9,10 +9,10 @@
 #include <dt-bindings/soc/rockchip,vop2.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 #include <rockchip/rk3568.dtsi>
-#include "rk3568-vngpu.dtsi"
 #include "rk3568-ip.dtsi"
 #include "rk3568-ip-rk809.dtsi"
 #include "rk3568-ramoops.dtsi"
+#include "rk3568-vngpu.dtsi"
 
 / {
 	model = "NSY-G68 AX3000 Router";
