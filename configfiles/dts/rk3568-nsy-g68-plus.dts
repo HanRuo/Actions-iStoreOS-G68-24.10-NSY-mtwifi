@@ -1063,8 +1063,14 @@
 };
 
 &rknpu {
-	status = "okay";
-	rknpu-supply = <&vdd_logic>; /* 修改此处 */
+    status = "okay";
+    /* 强制补全中断定义，这是解决 ENXIO 错误的关键 */
+    interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>; 
+    interrupt-names = "npu_irq";
+    
+    /* 沿用你当前的电源方案 */
+    rknpu-supply = <&vdd_logic>;
+    mem-supply = <&vdd_logic>;
 };
 
 &bus_npu {
