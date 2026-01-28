@@ -1058,23 +1058,48 @@
 	venc-supply = <&vdd_logic>; /* 修改此处 */
 };
 
-&gpu {
-	status = "okay";
-	mali-supply = <&vdd_logic>; /* 修改此处 */
-};
-
 &rknpu {
     status = "okay";
-    /* 强制补全中断定义，这是解决 ENXIO 错误的关键 */
+    /* 强制指定中断，防止路由固件常见的 151/160 冲突 */
     interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>; 
     interrupt-names = "npu_irq";
     
-    /* 沿用你当前的电源方案 */
     rknpu-supply = <&vdd_logic>;
     mem-supply = <&vdd_logic>;
+
+    /* 必须：切断报错的调压表引用 */
+    /delete-property/ operating-points-v2;
+    
+    /* 必须：清理所有与芯片体质检测相关的残留属性，防止驱动卡死 */
+    /delete-property/ nvmem-cells;
+    /delete-property/ nvmem-cell-names;
+    /delete-property/ rockchip,pvtm-voltage-sel;
+    /delete-property/ rockchip,init-freq;
+
+    /* 强制高性能频率 (800MHz) */
+    assigned-clocks = <&cru CLK_NPU>;
+    assigned-clock-rates = <800000000>; 
+};
+
+&gpu {
+    status = "okay";
+    mali-supply = <&vdd_logic>;
+
+    /* 切断调压表，解除 200MHz 锁定 */
+    /delete-property/ operating-points-v2;
+    
+    /* 清理 GPU 的体质检测残留 */
+    /delete-property/ nvmem-cells;
+    /delete-property/ nvmem-cell-names;
+    /delete-property/ rockchip,pvtm-voltage-sel;
+
+    /* 强制高性能频率 (600MHz) */
+    assigned-clocks = <&cru CLK_GPU>;
+    assigned-clock-rates = <600000000>;
 };
 
 &bus_npu {
-	status = "okay";
-	bus-supply = <&vdd_logic>; /* 修改此处 */
+    status = "okay";
+    bus-supply = <&vdd_logic>;
+    /delete-property/ operating-points-v2;
 };
