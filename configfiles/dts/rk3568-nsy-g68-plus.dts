@@ -1023,35 +1023,22 @@
 /* ========================================================== */
 
 / {
-    /* 这里的 vdd_logic 是标签(Label)，方便你在下方通过 &vdd_logic 引用 */
-    /* 这里的 vdd-logic 是节点名，必须唯一 */
-    vdd_logic: vdd-logic {
-        compatible = "regulator-fixed";
-        regulator-name = "vdd_logic"; // 内核里看到的名称
-        regulator-always-on;
-        regulator-boot-on;
-        regulator-min-microvolt = <900000>;
-        regulator-max-microvolt = <900000>;
+	/* 1. 核心电源：将 vdd_logic 定义为 PWM 调节模式 */
+	vdd_logic: vdd-logic {
+		compatible = "pwm-regulator";
+		rockchip,pwm_id = <1>;          /* 绑定到 PWM1 */
+		pwms = <&pwm1 0 25000 1>;       /* 25000ns 周期 (40kHz) */
+		regulator-name = "vdd_logic";
+		regulator-min-microvolt = <900000>;  /* 最低 0.9V */
+		regulator-max-microvolt = <1200000>; /* 最高 1.2V，支持超频 */
+		regulator-init-microvolt = <900000>;
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-settle-up-time-us = <250>;
 		vin-supply = <&vcc3v3_sys>;
-    };
+	};
 };
 
-/* --- 1. 定义假表：给 NPU 和 GPU 满血的“诱饵” --- */
-my_npu_opp_table: my-npu-opp-table {
-    compatible = "operating-points-v2";
-    opp-800000000 {
-        opp-hz = /bits/ 64 <800000000>;
-        opp-microvolt = <900000>; 
-    };
-};
-
-my_gpu_opp_table: my-gpu-opp-table {
-    compatible = "operating-points-v2";
-    opp-600000000 {
-        opp-hz = /bits/ 64 <600000000>;
-        opp-microvolt = <900000>;
-    };
-};
 
 /* --- 2. VPU：回归初版复位补全，确保 700M --- */
 &rkvdec {
@@ -1064,35 +1051,33 @@ my_gpu_opp_table: my-gpu-opp-table {
     reset-names = "video_a", "video_h", "video_cabac",
                   "video_core", "video_hevc_cabac",
                   "shared_niu_a", "shared_niu_h";
-    /* 这里你可以选择不写，依赖默认；或者写上 700M 保险 */
-    assigned-clock-rates = <396000000>, <396000000>, <396000000>, <700000000>;
 };
 
 /* --- 3. GPU：补全中断 + 注入 600M 假表 --- */
 &gpu {
-    status = "okay";
-    mali-supply = <&vdd_logic>;
-    /* 补全中断，防止 GPU 节点消失 */
-    interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,
-                 <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
-                 <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
-    interrupt-names = "gpu", "mmu", "job";
-    /* 使用 600M 假表，解开 200M 锁定 */
-    operating-points-v2 = <&my_gpu_opp_table>;
+	status = "okay";
+	mali-supply = <&vdd_logic>;
+	/* 补全中断，确保 GPU 驱动加载后能正常创建设备节点 */
+	interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,
+		     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
+		     <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
+	interrupt-names = "gpu", "mmu", "job";
+	/* 注意：有了 PWM 调压，我们不再需要手动注入假表，使用内核默认 OPP 即可 */
 };
 
 /* --- 4. NPU：激活节点 --- */
 &rknpu {
-    status = "okay";
-    interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>; 
-    interrupt-names = "npu_irq";
-    rknpu-supply = <&vdd_logic>;
-    mem-supply = <&vdd_logic>;
-    operating-points-v2 = <&my_npu_opp_table>;
+	status = "okay";
+	rknpu-supply = <&vdd_logic>;
+	mem-supply = <&vdd_logic>;
+	/* 关键：补齐中断号，这是生成 /dev/rknpu 的必要条件 */
+	interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
+	interrupt-names = "npu_irq";
 };
 
 &bus_npu {
-    status = "okay";
-    bus-supply = <&vdd_logic>;
-    /delete-property/ operating-points-v2;
+	status = "okay";
+	bus-supply = <&vdd_logic>;
+	/* 移除总线端的频率限制，让它随核心自动调节 */
+	/delete-property/ operating-points-v2;
 };
