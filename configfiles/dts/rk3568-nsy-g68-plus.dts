@@ -1036,66 +1036,59 @@
     };
 };
 
-/* 2. 修改各硬件节点引用该虚拟电源 */
+/* --- 1. 定义假表：给 NPU 和 GPU 满血的“诱饵” --- */
+my_npu_opp_table: my-npu-opp-table {
+    compatible = "operating-points-v2";
+    opp-800000000 {
+        opp-hz = /bits/ 64 <800000000>;
+        opp-microvolt = <900000>; 
+    };
+};
 
+my_gpu_opp_table: my-gpu-opp-table {
+    compatible = "operating-points-v2";
+    opp-600000000 {
+        opp-hz = /bits/ 64 <600000000>;
+        opp-microvolt = <900000>;
+    };
+};
+
+/* --- 2. VPU：回归初版复位补全，确保 700M --- */
 &rkvdec {
     status = "okay";
     vdec-supply = <&vdd_logic>;
-	
-	/* 补全复位信号名称 */
-	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
-			 <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
-			 <&cru SRST_RKVDEC_HEVC_CA>,
-			 <&cru SRST_A_VPU_NIU>, <&cru SRST_H_VPU_NIU>;
-	
-	reset-names = "video_a", "video_h", "video_cabac",
-				  "video_core", "video_hevc_cabac",
-				  "shared_niu_a", "shared_niu_h";
+    resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
+             <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
+             <&cru SRST_RKVDEC_HEVC_CA>,
+             <&cru SRST_A_VPU_NIU>, <&cru SRST_H_VPU_NIU>;
+    reset-names = "video_a", "video_h", "video_cabac",
+                  "video_core", "video_hevc_cabac",
+                  "shared_niu_a", "shared_niu_h";
+    /* 这里你可以选择不写，依赖默认；或者写上 700M 保险 */
+    assigned-clock-rates = <396000000>, <396000000>, <396000000>, <700000000>;
 };
 
-&rkvenc {
-	status = "okay";
-	venc-supply = <&vdd_logic>; /* 修改此处 */
-};
-
-&rknpu {
-    status = "okay";
-    /* 强制指定中断，防止路由固件常见的 151/160 冲突 */
-    interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>; 
-    interrupt-names = "npu_irq";
-    
-    rknpu-supply = <&vdd_logic>;
-    mem-supply = <&vdd_logic>;
-
-    /* 必须：切断报错的调压表引用 */
-    /delete-property/ operating-points-v2;
-    
-    /* 必须：清理所有与芯片体质检测相关的残留属性，防止驱动卡死 */
-    /delete-property/ nvmem-cells;
-    /delete-property/ nvmem-cell-names;
-    /delete-property/ rockchip,pvtm-voltage-sel;
-    /delete-property/ rockchip,init-freq;
-
-    /* 强制高性能频率 (800MHz) */
-    assigned-clocks = <&cru CLK_NPU>;
-    assigned-clock-rates = <800000000>; 
-};
-
+/* --- 3. GPU：补全中断 + 注入 600M 假表 --- */
 &gpu {
     status = "okay";
     mali-supply = <&vdd_logic>;
+    /* 补全中断，防止 GPU 节点消失 */
+    interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,
+                 <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
+                 <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
+    interrupt-names = "gpu", "mmu", "job";
+    /* 使用 600M 假表，解开 200M 锁定 */
+    operating-points-v2 = <&my_gpu_opp_table>;
+};
 
-    /* 切断调压表，解除 200MHz 锁定 */
-    /delete-property/ operating-points-v2;
-    
-    /* 清理 GPU 的体质检测残留 */
-    /delete-property/ nvmem-cells;
-    /delete-property/ nvmem-cell-names;
-    /delete-property/ rockchip,pvtm-voltage-sel;
-
-    /* 强制高性能频率 (600MHz) */
-    assigned-clocks = <&cru CLK_GPU>;
-    assigned-clock-rates = <600000000>;
+/* --- 4. NPU：激活节点 --- */
+&rknpu {
+    status = "okay";
+    interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>; 
+    interrupt-names = "npu_irq";
+    rknpu-supply = <&vdd_logic>;
+    mem-supply = <&vdd_logic>;
+    operating-points-v2 = <&my_npu_opp_table>;
 };
 
 &bus_npu {
