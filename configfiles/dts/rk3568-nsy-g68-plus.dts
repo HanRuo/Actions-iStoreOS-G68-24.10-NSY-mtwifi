@@ -1040,44 +1040,49 @@
 };
 
 
-/* --- 2. VPU：回归初版复位补全，确保 700M --- */
+/* --- 3. VPU 解码器 --- */
 &rkvdec {
-    status = "okay";
-    vdec-supply = <&vdd_logic>;
-    resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
-             <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
-             <&cru SRST_RKVDEC_HEVC_CA>,
-             <&cru SRST_A_VPU_NIU>, <&cru SRST_H_VPU_NIU>;
-    reset-names = "video_a", "video_h", "video_cabac",
-                  "video_core", "video_hevc_cabac",
-                  "shared_niu_a", "shared_niu_h";
+	status = "okay";
+	vdec-supply = <&vdd_logic>;
+	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
+		 <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
+		 <&cru SRST_RKVDEC_HEVC_CA>,
+		 <&cru SRST_A_VPU_NIU>, <&cru SRST_H_VPU_NIU>;
+	reset-names = "video_a", "video_h", "video_cabac",
+		      "video_core", "video_hevc_cabac",
+		      "shared_niu_a", "shared_niu_h";
 };
 
-/* --- 3. GPU：补全中断 + 注入 600M 假表 --- */
+/* --- 4. VPU 编码器 --- */
+&rkvenc {
+	status = "okay";
+	venc-supply = <&vdd_logic>;
+};
+
+/* --- 5. GPU 图形处理器 --- */
 &gpu {
 	status = "okay";
 	mali-supply = <&vdd_logic>;
-	/* 补全中断，确保 GPU 驱动加载后能正常创建设备节点 */
+	/* 建议保留中断定义，这是节点出现的“护身符” */
 	interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,
 		     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
 		     <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
 	interrupt-names = "gpu", "mmu", "job";
-	/* 注意：有了 PWM 调压，我们不再需要手动注入假表，使用内核默认 OPP 即可 */
 };
 
-/* --- 4. NPU：激活节点 --- */
+/* --- 6. NPU 神经网络单元 --- */
 &rknpu {
 	status = "okay";
 	rknpu-supply = <&vdd_logic>;
 	mem-supply = <&vdd_logic>;
-	/* 关键：补齐中断号，这是生成 /dev/rknpu 的必要条件 */
 	interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
 	interrupt-names = "npu_irq";
 };
 
+/* --- 7. NPU 总线 --- */
 &bus_npu {
 	status = "okay";
 	bus-supply = <&vdd_logic>;
-	/* 移除总线端的频率限制，让它随核心自动调节 */
+	/* 既然有了 PWM 调压，删除这个旧的频率映射属性防止冲突 */
 	/delete-property/ operating-points-v2;
 };
