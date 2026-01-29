@@ -141,8 +141,6 @@
 
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
-		clocks = <&rk809 1>;
-		clock-names = "ext_clock";
 		pinctrl-names = "default";
 		pinctrl-0 = <&wifi_enable_h>;
 		post-power-on-delay-ms = <200>;
@@ -824,8 +822,8 @@
 	cap-sd-highspeed;
 	disable-wp;
 	sd-uhs-sdr104;
-	vmmc-supply = <&vcc3v3_sd>;
-	vqmmc-supply = <&vccio_sd>;
+	vmmc-supply = <&vcc3v3_sys>;
+	vqmmc-supply = <&vcc3v3_sys>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
 	status = "disabled";
