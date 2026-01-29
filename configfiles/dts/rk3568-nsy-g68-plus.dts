@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-
 /dts-v1/;
 
 #include <dt-bindings/gpio/gpio.h>
@@ -31,9 +30,8 @@
 		compatible = "rockchip,fiq-debugger";
 		rockchip,serial-id = <2>;
 		rockchip,wake-irq = <0>;
-		/* If enable uart uses irq instead of fiq */
 		rockchip,irq-mode-enable = <1>;
-		rockchip,baudrate = <1500000>;  /* Only 115200 and 1500000 */
+		rockchip,baudrate = <1500000>;
 		interrupts = <GIC_SPI 252 IRQ_TYPE_LEVEL_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&uart2m0_xfer>;
@@ -126,7 +124,6 @@
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
-
 	};
 
 	vcc3v3_lcd1_n: vcc3v3-lcd1-n {
@@ -140,13 +137,12 @@
 		regulator-state-mem {
 			regulator-off-in-suspend;
 		};
-
 	};
 
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
-		/* clocks = <&rk809 1>; */
-		/* clock-names = "ext_clock"; */
+		clocks = <&rk809 1>;
+		clock-names = "ext_clock";
 		pinctrl-names = "default";
 		pinctrl-0 = <&wifi_enable_h>;
 		post-power-on-delay-ms = <200>;
@@ -241,6 +237,7 @@
 		regulator-boot-on;
 	};
 
+	// 保留原始CPU PWM电源（pwm0），不做修改
 	vdd_cpu: vdd-cpu {
 		compatible = "pwm-regulator";
 		rockchip,pwm_id = <0>;
@@ -254,6 +251,62 @@
 		regulator-ramp-delay = <8000>;
 		regulator-always-on;
 		regulator-boot-on;
+	};
+
+	/******************************************************************************************
+	 * 新增：GPU/NPU/VPU 专用PWM调压电源节点（替代原RK809 PMIC的DCDC/LDO）
+	 * 电源树：dc_12v -> vcc3v3_sys -> 各PWM电源节点
+	 * PWM分配：pwm1(GPU)、pwm2(NPU)、pwm3(VPU)，参数对齐RK3568芯片规格
+	 ******************************************************************************************/
+	// GPU电源：pwm1，电压范围850mV~1000mV（匹配gpu_opp_table的电压要求）
+	vdd_gpu: vdd-gpu {
+		compatible = "pwm-regulator";
+		rockchip,pwm_id = <1>;
+		rockchip,pwm_voltage = <900000>;
+		pwms = <&pwm1 0 25000 1>; // 25000ns = 40KHz PWM频率，与CPU保持一致
+		regulator-name = "vdd_gpu";
+		regulator-min-microvolt = <850000>;  // 最低850mV，匹配GPU OPP最低电压
+		regulator-max-microvolt = <1000000>; // 最高1000mV，匹配GPU OPP最高电压
+		regulator-init-microvolt = <900000>; // 初始900mV，平衡功耗与性能
+		regulator-enable-ramp-delay = <300>;
+		regulator-ramp-delay = <8000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vcc3v3_sys>;
+	};
+
+	// NPU电源：pwm2，电压范围850mV~1000mV（匹配npu_opp_table的电压要求）
+	vdd_npu: vdd-npu {
+		compatible = "pwm-regulator";
+		rockchip,pwm_id = <2>;
+		rockchip,pwm_voltage = <900000>;
+		pwms = <&pwm2 0 25000 1>;
+		regulator-name = "vdd_npu";
+		regulator-min-microvolt = <850000>;  // 最低850mV，匹配NPU OPP最低电压
+		regulator-max-microvolt = <1000000>; // 最高1000mV，匹配NPU OPP最高电压
+		regulator-init-microvolt = <900000>; // 初始900mV，与前序DTSI配置一致
+		regulator-enable-ramp-delay = <300>;
+		regulator-ramp-delay = <8000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vcc3v3_sys>;
+	};
+
+	// VPU电源：pwm3，电压范围850mV~950mV（RK3568 VPU推荐电压范围）
+	vdd_logic: vdd-logic {
+		compatible = "pwm-regulator";
+		rockchip,pwm_id = <3>;
+		rockchip,pwm_voltage = <900000>;
+		pwms = <&pwm3 0 25000 1>;
+		regulator-name = "vdd_logic";
+		regulator-min-microvolt = <850000>;  // VPU最低工作电压
+		regulator-max-microvolt = <950000>;   // VPU最高工作电压
+		regulator-init-microvolt = <900000>; // 初始900mV，通用稳定值
+		regulator-enable-ramp-delay = <300>;
+		regulator-ramp-delay = <8000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vcc3v3_sys>;
 	};
 
 	xpcs: syscon@fda00000 {
@@ -308,263 +361,15 @@
 		realtek,id = <29>;
 		phy-id = <29>;
 		cpu_port = <7>;
-
-		//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
-		//sgmii,
 		realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
-		//rgmii
 		realtek,extif2 = <0 0 1 1 1 1 1 1 2>;
 		status = "okay";
 	};
 };
 
+// 移除原i2c0下的RK809 PMIC节点，无PMIC硬件无需配置
 &i2c0 {
-
-	status = "okay";
-
-	rk809: pmic@20 {
-		compatible = "rockchip,rk809";
-		reg = <0x20>;
-		status = "disabled"; /* 增加这一行 */
-		interrupt-parent = <&gpio0>;
-		interrupts = <RK_PA3 IRQ_TYPE_LEVEL_LOW>;
-		pinctrl-names = "default", "pmic-sleep", "pmic-power-off", "pmic-reset";
-		pinctrl-0 = <&pmic_int>;
-		pinctrl-1 = <&soc_slppin_slp &rk817_slppin_slp>;
-		pinctrl-2 = <&soc_slppin_gpio &rk817_slppin_pwrdn>;
-		pinctrl-3 = <&soc_slppin_gpio &rk817_slppin_rst>;
-		/* 删掉 rockchip,system-power-controller; 否则关机报 I2C 错误 */
-		wakeup-source;
-		#clock-cells = <1>;
-		clock-output-names = "rk808-clkout1\0rk808-clkout2";
-		pmic-reset-func = <0>;
-		not-save-power-en = <1>;
-		vcc1-supply = <&vcc3v3_sys>;
-		vcc2-supply = <&vcc3v3_sys>;
-		vcc3-supply = <&vcc3v3_sys>;
-		vcc4-supply = <&vcc3v3_sys>;
-		vcc5-supply = <&vcc3v3_sys>;
-		vcc6-supply = <&vcc3v3_sys>;
-		vcc7-supply = <&vcc3v3_sys>;
-		vcc8-supply = <&vcc3v3_sys>;
-		vcc9-supply = <&vcc3v3_sys>;
-
-		pwrkey {
-			status = "okay";
-		};
-
-		pinctrl_rk8xx: pinctrl_rk8xx {
-			gpio-controller;
-			#gpio-cells = <2>;
-
-			rk817_slppin_null: rk817_slppin_null {
-				pins = "gpio_slp";
-				function = "pin_fun0";
-			};
-
-			rk817_slppin_slp: rk817_slppin_slp {
-				pins = "gpio_slp";
-				function = "pin_fun1";
-			};
-
-			rk817_slppin_pwrdn: rk817_slppin_pwrdn {
-				pins = "gpio_slp";
-				function = "pin_fun2";
-			};
-
-			rk817_slppin_rst: rk817_slppin_rst {
-				pins = "gpio_slp";
-				function = "pin_fun3";
-			};
-		};
-
-		regulators {
-
-			vdd_gpu: DCDC_REG2 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <500000>;
-				regulator-max-microvolt = <1350000>;
-				regulator-init-microvolt = <1000000>;
-				regulator-ramp-delay = <6001>;
-				regulator-initial-mode = <2>;
-				regulator-name = "vdd_gpu";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vcc_ddr: DCDC_REG3 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-initial-mode = <2>;
-				regulator-name = "vcc_ddr";
-
-				regulator-state-mem {
-					regulator-on-in-suspend;
-				};
-			};
-
-			vdd_npu: DCDC_REG4 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <500000>;
-				regulator-max-microvolt = <1350000>;
-				regulator-init-microvolt = <1000000>;
-				regulator-ramp-delay = <6001>;
-				regulator-initial-mode = <2>;
-				regulator-name = "vdd_npu";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdda0v9_image: LDO_REG1 {
-				regulator-boot-on;
-				regulator-always-on;
-				regulator-min-microvolt = <900000>;
-				regulator-max-microvolt = <900000>;
-				regulator-name = "vdda0v9_image";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdda_0v9: LDO_REG2 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <900000>;
-				regulator-max-microvolt = <900000>;
-				regulator-name = "vdda_0v9";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vdda0v9_pmu: LDO_REG3 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <900000>;
-				regulator-max-microvolt = <900000>;
-				regulator-name = "vdda0v9_pmu";
-
-				regulator-state-mem {
-					regulator-on-in-suspend;
-					regulator-suspend-microvolt = <900000>;
-				};
-			};
-
-			vccio_acodec: LDO_REG4 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <3000000>;
-				regulator-max-microvolt = <3000000>;
-				regulator-name = "vccio_acodec";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vccio_sd: LDO_REG5 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-name = "vccio_sd";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vcc3v3_pmu: LDO_REG6 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <3300000>;
-				regulator-max-microvolt = <3300000>;
-				regulator-name = "vcc3v3_pmu";
-
-				regulator-state-mem {
-					regulator-on-in-suspend;
-					regulator-suspend-microvolt = <3300000>;
-				};
-			};
-
-			vcca_1v8: LDO_REG7 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-				regulator-name = "vcca_1v8";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vcca1v8_pmu: LDO_REG8 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-				regulator-name = "vcca1v8_pmu";
-
-				regulator-state-mem {
-					regulator-on-in-suspend;
-					regulator-suspend-microvolt = <1800000>;
-				};
-			};
-
-			vcca1v8_image: LDO_REG9 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-				regulator-name = "vcca1v8_image";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vcc_1v8: DCDC_REG5 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-min-microvolt = <1800000>;
-				regulator-max-microvolt = <1800000>;
-				regulator-name = "vcc_1v8";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vcc_3v3: SWITCH_REG1 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-name = "vcc_3v3";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-
-			vcc3v3_sd: SWITCH_REG2 {
-				regulator-always-on;
-				regulator-boot-on;
-				regulator-name = "vcc3v3_sd";
-
-				regulator-state-mem {
-					regulator-off-in-suspend;
-				};
-			};
-		};
-	};
+	status = "disabled";
 };
 
 &pinctrl {
@@ -602,25 +407,6 @@
 		};
 	};
 
-	pmic {
-	
-		pmic_int: pmic-intl {
-			rockchip,pins = <0 RK_PA3 RK_FUNC_GPIO &pcfg_pull_up>;
-		};
-	
-		soc_slppin_gpio: soc-slppin-gpio {
-			rockchip,pins = <0 RK_PA2 0 &pcfg_output_low>;
-		};
-	
-		soc_slppin_slp:soc-slppin-slp {
-			rockchip,pins = <0 RK_PA2 1 &pcfg_pull_none>;
-		};
-	
-		soc_slppin_rst {
-			rockchip,pins = <0 RK_PA2 2 &pcfg_pull_none>;
-		};
-	};
-
 	pcie {
 		pcie30x1_reset_h: pcie30x1-reset-h {
 			rockchip,pins = <0 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -647,6 +433,8 @@
 			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+
+	// 移除PMIC相关Pinctrl节点，无PMIC硬件
 };
 
 &cpu0 {
@@ -678,12 +466,6 @@
 &pcie30_phy_grf {
 };
 
-// 注意两条 pcie reset gpio 均与 NSY不同
-// fe270000
-// 这里需要更换uboot版本,因为只有支持的pcie拆分的才能启动这个
-// 不然开启就挂死,更换版本:https://github.com/Kwiboo/u-boot-rockchip
-// https://lists.denx.de/pipermail/u-boot/2023-August/525793.html
-// 这个pcie,可能需要打补丁,使用radxa 版本
 &pcie3x1 {
 		vpcie3v3-supply = <&vcc3v3_pcie>;
 		reset-gpios = <&gpio0 RK_PC3 GPIO_ACTIVE_HIGH>;
@@ -692,13 +474,13 @@
 		status = "okay";
 };
 
-//fe280000
 &pcie3x2 {
 		vpcie3v3-supply = <&vcc3v3_pcie>;
 		reset-gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_HIGH>;
-		status = "okay";
 		num-lanes = <0x1>;
 		pinctrl-0 = <&pcie30x2_reset_h>;
+		rockchip,perst-inactive-ms = <500>;
+		status = "okay";
 };
 
 &pcie30phy {
@@ -764,9 +546,6 @@
 	phy-mode = "sgmii";
 	rockchip,pipegrf = <&pipegrf>;
 	rockchip,xpcs = <&xpcs>;
-	//snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
-	//snps,reset-active-low;
-	//snps,reset-delays-us = <0 20000 100000>;
 	assigned-clocks = <&cru SCLK_GMAC1_RX_TX>;
 	assigned-clock-parents = <&gmac1_xpcsclk>;
 	pinctrl-names = "default";
@@ -798,10 +577,9 @@
 };
 
 &usb_host0_xhci {
-	dr_mode = "host";//自动检测
-	//extcon = <&combphy0>;
+	dr_mode = "host";
+	extcon = <&usb2phy0>;
 	status = "okay";
-	extcon = <&usb2phy0>; //超过rxda测试
 	snps,dis_enblslpm_quirk;
 	snps,dis-u1-entry-quirk;
 	snps,dis-u2-entry-quirk;
@@ -823,7 +601,7 @@
 };
 
 &usb_host1_xhci {
-	dr_mode = "host";//自动检测
+	dr_mode = "host";
 	snps,dis_enblslpm_quirk;
 	snps,dis-u2-freeclk-exists-quirk;
 	snps,dis-del-phy-power-chg-quirk;
@@ -868,6 +646,7 @@
 
 &pmu_io_domains {
 	status = "okay";
+	// 调整PMU IO域电源，绑定到板卡固定3.3V电源（无PMIC，无法提供原LDO电源）
 	pmuio2-supply = <&vcc3v3_sys>;
 	vccio1-supply = <&vcc3v3_sys>;
 	vccio3-supply = <&vcc3v3_sys>;
@@ -877,119 +656,23 @@
 	vccio7-supply = <&vcc3v3_sys>;
 };
 
+/******************************************************************************************
+ * 启用GPU/NPU/VPU所需PWM控制器，确保PWM调压正常工作
+ ******************************************************************************************/
 &pwm0 {
-	status = "okay";
+	status = "okay"; // CPU专用，保留启用
 };
 
 &pwm1 {
-	status = "okay";
+	status = "okay"; // GPU专用，启用
 };
 
 &pwm2 {
-	status = "disable";
+	status = "okay"; // NPU专用，启用（原disabled，修改为okay）
 };
 
 &pwm3 {
-	status = "disable";
-};
-
-&power {
-	status = "okay";
-};
-
-//sdhci@fe310000
-&sdhci {
-	max-frequency = <200000000>;
-	bus-width = <8>;
-	no-sdio;
-	no-sd;
-	supports-emmc;
-	non-removable;
-	mmc-hs200-1_8v;
-	pinctrl-names = "default";
-	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
-	status = "okay";
-};
-
-//dwmmc@fe000000
-&sdmmc2 {
-	max-frequency = <150000000>;
-	fifo-depth = <256>;
-	no-sd;
-	no-mmc;
-	bus-width = <4>;
-	disable-wp;
-	cap-sd-highspeed;
-	cap-sdio-irq;
-	keep-power-in-suspend;
-	sd-uhs-sdr104;
-	mmc-pwrseq = <&sdio_pwrseq>;
-	non-removable;
-	pinctrl-names = "default";
-	pinctrl-0 = <&sdmmc2m0_bus4 &sdmmc2m0_cmd &sdmmc2m0_clk>;
-	status = "disabled";
-};
-
-//dwmmc@fe2b0000
-&sdmmc0 {
-	max-frequency = <150000000>;
-	fifo-depth = <256>;
-	no-sdio;
-	bus-width = <4>;
-	cap-mmc-highspeed;
-	cap-sd-highspeed;
-	disable-wp;
-	sd-uhs-sdr104;
-	vmmc-supply = <&vcc3v3_sys>;
-	vqmmc-supply = <&vcc3v3_sys>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
-	status = "disabled";
-};
-
-&combphy0 {
-	status = "okay";
-};
-
-&csi_dphy {
-	status = "okay";
-};
-
-&sfc {
-	status = "okay";
-
-	flash@0 {
-		compatible = "spi-nor";
-		reg = <0>;
-		spi-max-frequency = <25000000>;
-		spi-rx-bus-width = <4>;
-		spi-tx-bus-width = <1>;
-	};
-};
-
-&rng {
-	status = "okay";
-};
-
-//i2c@fe5a0000
-&i2c1 {
-	status = "disabled";
-};
-
-&i2c4 {
-	status = "okay";
-};
-
-&i2c5 {
-	status = "disabled";
-};
-
-&wdt {
-	status = "okay";
-};
-
-&uart8 {
-	status = "disabled";
+	status = "okay"; // VPU专用，启用（原disabled，修改为okay）
 };
 
 &pwm4 {
@@ -1012,77 +695,209 @@
 	status = "disabled";
 };
 
-//fe720000
+&power {
+	status = "okay";
+};
+
+/******************************************************************************************
+ * GPU配置：绑定PWM电源vdd_gpu，启用硬件
+ ******************************************************************************************/
+&gpu {
+	mali-supply = <&vdd_gpu>; // 绑定新增的PWM GPU电源
+	status = "okay";
+};
+
+/******************************************************************************************
+ * NPU配置：打开DT_ENABLE_NPU宏，绑定PWM电源vdd_npu，启用所有NPU相关模块
+ ******************************************************************************************/
+#define DT_ENABLE_NPU 1
+
+&vdd_npu {
+	regulator-init-microvolt = <900000>;
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&bus_npu {
+	bus-supply = <&vdd_logic>;
+	pvtm-supply = <&vdd_cpu>;
+	status = "okay";
+};
+
+&rknpu {
+	rknpu-supply = <&vdd_npu>; // 绑定新增的PWM NPU电源
+	status = "okay";
+};
+
+&rknpu_mmu {
+	status = "okay";
+};
+
+/******************************************************************************************
+ * VPU配置：绑定PWM电源vdd_logic，启用所有VPU子模块（vdpu/vepu/rkvenc/rkvdec）
+ ******************************************************************************************/
+&vpu {
+	status = "okay";
+};
+
+&vdpu {
+	status = "okay";
+};
+
+&vdpu_mmu {
+	status = "okay";
+};
+
+&vepu {
+	status = "okay";
+};
+
+&vepu_mmu {
+	status = "okay";
+};
+
+&rkvenc {
+	venc-supply = <&vdd_logic>; // 绑定新增的PWM VPU电源
+	status = "okay";
+};
+
+&rkvenc_mmu {
+	status = "okay";
+};
+
+&rkvdec {
+	vdec-supply = <&vdd_logic>; // 绑定新增的PWM VPU电源
+	rockchip,disable-auto-freq;
+	assigned-clock-rates = <396000000>, <396000000>, <396000000>, <600000000>;
+	status = "okay";
+};
+
+&rkvdec_mmu {
+	status = "okay";
+};
+
+&rga {
+	status = "okay";
+};
+
+&vop {
+	status = "okay";
+};
+
+&sdhci {
+	max-frequency = <200000000>;
+	bus-width = <8>;
+	no-sdio;
+	no-sd;
+	supports-emmc;
+	non-removable;
+	mmc-hs200-1_8v;
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
+	status = "okay";
+};
+
+&sdmmc2 {
+	max-frequency = <150000000>;
+	fifo-depth = <256>;
+	no-sd;
+	no-mmc;
+	bus-width = <4>;
+	disable-wp;
+	cap-sd-highspeed;
+	cap-sdio-irq;
+	keep-power-in-suspend;
+	sd-uhs-sdr104;
+	mmc-pwrseq = <&sdio_pwrseq>;
+	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc2m0_bus4 &sdmmc2m0_cmd &sdmmc2m0_clk>;
+	status = "disabled";
+};
+
+&sdmmc0 {
+	max-frequency = <150000000>;
+	fifo-depth = <256>;
+	no-sdio;
+	bus-width = <4>;
+	cap-mmc-highspeed;
+	cap-sd-highspeed;
+	disable-wp;
+	sd-uhs-sdr104;
+	vmmc-supply = <&vcc3v3_sd>;
+	vqmmc-supply = <&vccio_sd>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
+	status = "disabled";
+};
+
+&combphy0 {
+	status = "okay";
+};
+
+&csi_dphy {
+	status = "okay";
+};
+
+&sfc {
+	status = "okay";
+	flash@0 {
+		compatible = "spi-nor";
+		reg = <0>;
+		spi-max-frequency = <25000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <1>;
+	};
+};
+
+&rng {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&i2c4 {
+	status = "okay";
+};
+
+&i2c5 {
+	status = "disabled";
+};
+
+&wdt {
+	status = "okay";
+};
+
+&uart8 {
+	status = "disabled";
+};
+
 &saradc {
 	status = "okay";
 	vref-supply = <&vcc1v8_adc>;
 };
 
-/* ========================================================== */
-/* 强力修复：解决电源标签不存在导致的 -517 报错                */
-/* ========================================================== */
-
-/ {
-	/* 1. 核心电源：将 vdd_logic 定义为 PWM 调节模式 */
-	vdd_logic: vdd-logic {
-		compatible = "pwm-regulator";
-		rockchip,pwm_id = <1>;          /* 绑定到 PWM1 */
-		pwms = <&pwm1 0 25000 1>;       /* 25000ns 周期 (40kHz) */
-		regulator-name = "vdd_logic";
-		regulator-min-microvolt = <900000>;  /* 最低 0.9V */
-		regulator-max-microvolt = <1200000>; /* 最高 1.2V，支持超频 */
-		regulator-init-microvolt = <900000>;
-		regulator-always-on;
-		regulator-boot-on;
-		regulator-settle-up-time-us = <250>;
-		vin-supply = <&vcc3v3_sys>;
-	};
+// 启用MMP服务，为VPU/NPU提供任务调度支持
+&mpp_srv {
+	status = "okay";
 };
 
-
-/* --- 3. VPU 解码器 --- */
-&rkvdec {
+// 启用IEP，完善多媒体硬件配套
+&iep {
 	status = "okay";
-	vdec-supply = <&vdd_logic>;
-	resets = <&cru SRST_A_RKVDEC>, <&cru SRST_H_RKVDEC>,
-		 <&cru SRST_RKVDEC_CA>, <&cru SRST_RKVDEC_CORE>,
-		 <&cru SRST_RKVDEC_HEVC_CA>,
-		 <&cru SRST_A_VPU_NIU>, <&cru SRST_H_VPU_NIU>;
-	reset-names = "video_a", "video_h", "video_cabac",
-		      "video_core", "video_hevc_cabac",
-		      "shared_niu_a", "shared_niu_h";
 };
 
-/* --- 4. VPU 编码器 --- */
-&rkvenc {
+&iep_mmu {
 	status = "okay";
-	venc-supply = <&vdd_logic>;
 };
 
-/* --- 5. GPU 图形处理器 --- */
-&gpu {
+// 启用JPEG编解码，完善VPU子系统
+&jpegd {
 	status = "okay";
-	mali-supply = <&vdd_logic>;
-	/* 建议保留中断定义，这是节点出现的“护身符” */
-	interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>,
-		     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>,
-		     <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
-	interrupt-names = "gpu", "mmu", "job";
 };
 
-/* --- 6. NPU 神经网络单元 --- */
-&rknpu {
+&jpegd_mmu {
 	status = "okay";
-	rknpu-supply = <&vdd_logic>;
-	mem-supply = <&vdd_logic>;
-	interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
-	interrupt-names = "npu_irq";
-};
-
-/* --- 7. NPU 总线 --- */
-&bus_npu {
-	status = "okay";
-	bus-supply = <&vdd_logic>;
-	/* 既然有了 PWM 调压，删除这个旧的频率映射属性防止冲突 */
-	/delete-property/ operating-points-v2;
 };
