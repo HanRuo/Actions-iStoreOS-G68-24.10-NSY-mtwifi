@@ -383,7 +383,7 @@ reserved-memory {
 		mii-bus = <&mdio0>;
 		realtek,id = <29>;
 		phy-id = <29>;
-		cpu_port = <7>;
+		cpu_port = <6 7>;
 
 		//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
 		//sgmii,
@@ -930,7 +930,7 @@ reserved-memory {
 };
 
 &gmac1 {
-	status = "disabled";
+	status = "okay";
 	phy-mode = "sgmii";
 	rockchip,pipegrf = <&pipegrf>;
 	rockchip,xpcs = <&xpcs>;
