@@ -911,9 +911,10 @@ reserved-memory {
 
 &mdio1 {
 	status = "okay";
-	rtl8367s_fake_phy: ethernet-phy@1d {   // 你的 phy-id = <29> 十进制是 0x1d
-        compatible = "ethernet-phy-ieee802.3-c22";  // fake 兼容，让驱动走 MDIO
-        reg = <0x1d>;   // 匹配你的 phy-id = <29>
+
+	rtl8367s_fake_phy: ethernet-phy@1d {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <0x1d>;
     };
 };
 
