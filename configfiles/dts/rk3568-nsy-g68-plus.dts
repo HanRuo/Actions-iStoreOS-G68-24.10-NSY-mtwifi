@@ -890,6 +890,11 @@ reserved-memory {
 
 &mdio0 {
 	status = "okay";
+
+	rtl8367s_fake_phy: ethernet-phy@1d {
+		compatible = "ethernet-phy-ieee802.3-c22";
+		reg = <0x1d>;
+    };
 };
 
 &gmac0 {
@@ -907,15 +912,6 @@ reserved-memory {
 	phy-handle = <&rtl8367s_phy>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac0_miim &gmac0_tx_bus2 &gmac0_rx_bus2 &gmac0_rgmii_clk &gmac0_rgmii_bus>;
-};
-
-&mdio1 {
-	status = "okay";
-
-	rtl8367s_fake_phy: ethernet-phy@1d {
-		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <0x1d>;
-    };
 };
 
 &pipe_phy_grf1 {
