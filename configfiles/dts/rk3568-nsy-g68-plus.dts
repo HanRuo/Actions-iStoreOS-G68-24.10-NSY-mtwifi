@@ -898,9 +898,9 @@ reserved-memory {
 	snps,reset-gpio = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
 	snps,reset-delays-us = <0 20000 100000>;
-	assigned-clocks = <&cru SCLK_GMAC0_RX_TX>, <&cru SCLK_GMAC0>, <&cru RGMIIM0_CLK>;
 	assigned-clock-parents = <&cru SCLK_GMAC0_RGMII_SPEED>, <&cru SCLK_GMAC0_RX_TX>, <&cru SCLK_GMAC0_RX_TX>;
 	assigned-clock-rates = <0>, <125000000>, <125000000>;
+	assigned-clocks = <&cru SCLK_GMAC0_RX_TX>, <&cru SCLK_GMAC0>, <&cru RGMIIM0_CLK>;
 	tx_delay = <0x3f>;
 	rx_delay = <0x2c>;
 	clock_in_out = "output";
@@ -930,20 +930,14 @@ reserved-memory {
     phy-mode = "sgmii";
     rockchip,pipegrf = <&pipegrf>;
     rockchip,xpcs = <&xpcs>;
-    
-    /* 修正：使用CRU内部时钟，不依赖外部时钟 */
     assigned-clocks = <&cru SCLK_GMAC1_RX_TX>, <&cru SCLK_GMAC1>;
     assigned-clock-parents = <&cru CLK_MAC1_2TOP>, <&cru CLK_MAC1_2TOP>;
     assigned-clock-rates = <0>, <125000000>;
-    
     snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
     snps,reset-active-low;
-    snps,reset-delays-us = <0 50000 200000>;  /* 增加复位时间 */
-    
-    /* 关键：添加SGMII delay */
+    snps,reset-delays-us = <0 50000 200000>;
     tx_delay = <0x4>;
     rx_delay = <0x4>;
-    
     fixed-link {
         speed = <1000>;
         full-duplex;
