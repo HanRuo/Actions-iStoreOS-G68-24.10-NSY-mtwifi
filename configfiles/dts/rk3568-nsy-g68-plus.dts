@@ -890,11 +890,6 @@ reserved-memory {
 
 &mdio0 {
 	status = "okay";
-
-	rtl8367s_fake_phy: ethernet-phy@1d {
-		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <0x1d>;
-    };
 };
 
 &gmac0 {
