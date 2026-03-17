@@ -898,20 +898,20 @@ reserved-memory {
 		#address-cells = <1>;
 		#size-cells = <0>;
 		
-			rtlgsw@1d {
-					compatible = "realtek,rtl8367s";
-					reg = <0x1d>;
+		rtlgsw@1d {
+			compatible = "realtek,rtl8367s";
+			reg = <0x1d>;
 					
-					realtek,id = <29>;
-					cpu_port = <6 7>;
+			realtek,id = <29>;
+			cpu_port = <6 7>;
 
-					//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
-					//sgmii,
-					realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
-					//rgmii
-					realtek,extif2 = <0 0 1 1 1 1 1 1 2>;
-					status = "okay";
-			};
+			//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
+			//sgmii,
+			realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
+			//rgmii
+			realtek,extif2 = <0 0 1 1 1 1 1 1 2>;
+			status = "okay";
+		};
 	};
 };	
 
