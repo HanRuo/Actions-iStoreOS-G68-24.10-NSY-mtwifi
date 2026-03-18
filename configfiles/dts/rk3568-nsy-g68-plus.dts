@@ -933,9 +933,9 @@ reserved-memory {
 	phy-mode = "sgmii";
 	rockchip,pipegrf = <&pipegrf>;
 	rockchip,xpcs = <&xpcs>;
-	assigned-clocks = <&cru SCLK_GMAC1_RX_TX> <&cru SCLK_GMAC1>;
-	assigned-clock-parents = <&cru CLK_MAC1_2TOP> <&cru CLK_MAC1_2TOP>;
-	assigned-clock-rates = <0> <125000000>;
+	assigned-clocks = <&cru SCLK_GMAC1_RX_TX &cru SCLK_GMAC1>;
+	assigned-clock-parents = <&cru CLK_MAC1_2TOP &cru CLK_MAC1_2TOP>;
+	assigned-clock-rates = <0 125000000>;
 	snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
 	snps,reset-delays-us = <0 50000 200000>;
