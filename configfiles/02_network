@@ -7,6 +7,7 @@ rockchip_setup_interfaces()
 	local board="$1"
 
 	case "$board" in
+	cyber,cyber3588-aib|\
 	armsom,sige7|\
 	easepi,ars4|\
 	lunzn,fastrhino-r66s|\
@@ -42,9 +43,7 @@ rockchip_setup_interfaces()
 	nsy,g68-plus|\
 	bdy,g18-pro)
 		ucidef_add_switch "switch0" \
-			"4:wan" "7t@eth0"
-		ucidef_add_switch_vlan "switch0" "1" \
-			"0:lan" "1:lan" "2:lan" "3:lan" "6t@eth1"
+			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "7t@eth0"
 		;;
 	nsy,g16-plus)
 		ucidef_add_switch "switch0" \
@@ -58,7 +57,6 @@ rockchip_setup_interfaces()
 	friendlyarm,nanopi-r6s)
 		ucidef_set_interfaces_lan_wan 'eth0 eth2' 'eth1'
 		;;
-	easepi,r1|easepi,r1-lite|\
 	hinlink,opc-h68k|\
 	lunzn,fastrhino-r68s|\
 	lyt,t68m|\
@@ -67,6 +65,12 @@ rockchip_setup_interfaces()
 		;;
 	roceos,k60pro)
 		ucidef_set_interfaces_lan_wan 'eth1 eth2 eth3 eth4 eth5' 'eth0'
+		;;
+	easepi,r1|easepi,r1-lite|\
+	linkease,easepi-r1)
+		ucidef_set_network_device_path eth2 'platform/3c0400000.pcie/pci0001:10/0001:10:00.0/0001:11:00.0'
+		ucidef_set_network_device_path eth3 'platform/3c0000000.pcie/pci0000:00/0000:00:00.0/0000:01:00.0'
+		ucidef_set_interfaces_lan_wan 'eth1 eth2 eth3' 'eth0'
 		;;
 	sinovoip,rk3568-bpi-r2pro)
 		ucidef_set_interfaces_lan_wan 'lan0 lan1 lan2 lan3' 'eth0'
@@ -108,12 +112,15 @@ rockchip_setup_macs()
 
 	case "$board" in
 	armsom,sige7|\
-	lunzn,fastrhino-r66s|\
-	lunzn,fastrhino-r68s|\
+	friendlyarm,nanopc-t6|\
+	friendlyarm,nanopi-r2c|\
+	friendlyarm,nanopi-r2s|\
+	linkease,easepi-r1|\
 	nsy,g68-plus|\
 	nsy,g16-plus|\
 	bdy,g18-pro|\
-	friendlyarm,nanopc-t6)
+	lunzn,fastrhino-r66s|\
+	lunzn,fastrhino-r68s)
 		wan_mac=$(macaddr_generate_from_mmc_cid mmcblk0)
 		lan_mac=$(macaddr_add "$wan_mac" 1)
 		;;
