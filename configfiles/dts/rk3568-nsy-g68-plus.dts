@@ -335,7 +335,7 @@ reserved-memory {
 	xpcs: syscon@fda00000 {
 		compatible = "rockchip,rk3568-xpcs", "syscon";
 		reg = <0x0 0xfda00000 0x0 0x200000>;
-		status = "disabled";
+		status = "okay";
 	};
 
 	gmac0_xpcsclk: xpcs-gmac0-clock {
@@ -377,21 +377,6 @@ reserved-memory {
 		};
 	};
 
-	rtlgsw@0 {
-		compatible = "realtek,rtl8367s";
-		realtek,mdio = <&mdio0>;
-		mii-bus = <&mdio0>;
-		realtek,id = <29>;
-		phy-id = <29>;
-		cpu_port = <7>;
-
-		//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
-		//sgmii,
-		realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
-		//rgmii
-		realtek,extif2 = <0 0 1 1 1 1 1 1 2>;
-		status = "okay";
-	};
 
 	gpu_opp_table: opp-table-1 {
 		compatible = "operating-points-v2";
@@ -888,7 +873,16 @@ reserved-memory {
 		status = "okay";
 };
 
-&mdio0 {
+rtlgsw@0 {
+	compatible = "realtek,rtl8367s";
+	reg = <29>;				
+	realtek,id = <29>;
+	cpu_port = <6 7>;
+	//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
+	//sgmii,
+	realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
+	//rgmii
+	realtek,extif2 = <0 0 1 1 1 1 1 1 2>;
 	status = "okay";
 };
 
@@ -910,11 +904,14 @@ reserved-memory {
 		speed = <1000>;
 		full-duplex;
 	};
-};
 
-&mdio1 {
-	status = "okay";
-};
+	mdio0: mdio {
+		compatible = "snps,dwmac-mdio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		
+	};
+};	
 
 &pipe_phy_grf1 {
 	status = "okay";
@@ -926,23 +923,22 @@ reserved-memory {
 };
 
 &xpcs {
-	status = "disabled";
+	status = "okay";
 };
 
 &gmac1 {
-	status = "disabled";
+	status = "okay";
 	phy-mode = "sgmii";
 	rockchip,pipegrf = <&pipegrf>;
 	rockchip,xpcs = <&xpcs>;
-	//snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
-	//snps,reset-active-low;
-	//snps,reset-delays-us = <0 20000 100000>;
-	assigned-clocks = <&cru SCLK_GMAC1_RX_TX>;
-	assigned-clock-parents = <&gmac1_xpcsclk>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&gmac1m1_miim>;
-	power-domains = <&power RK3568_PD_PIPE>;
-	phys = <&combphy1 PHY_TYPE_SGMII>;
+	assigned-clocks = <&cru SCLK_GMAC1_RX_TX &cru SCLK_GMAC1>;
+	assigned-clock-parents = <&cru CLK_MAC1_2TOP &cru CLK_MAC1_2TOP>;
+	assigned-clock-rates = <0 125000000>;
+	snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 50000 200000>;
+	tx_delay = <0x4>;
+	rx_delay = <0x4>;
 	fixed-link {
 		speed = <1000>;
 		full-duplex;
