@@ -33,7 +33,7 @@
 		bootargs = "earlycon=uart8250,mmio32,0xfe660000 console=ttyFI0 rootwait";
 	};
 
-reserved-memory {
+	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
@@ -525,8 +525,6 @@ reserved-memory {
 			opp-hz = /bits/ 64 <600000000>;
 			opp-microvolt = <1000000>;
 		};
-
-
 	};
 
 	bus_npu_opp_table: bus-npu-opp-table {
@@ -547,7 +545,6 @@ reserved-memory {
 			opp-hz = /bits/ 64 <900000000>;
 			opp-microvolt = <900000>;
 		};
-
 	};
 };
 
@@ -911,7 +908,6 @@ reserved-memory {
 		compatible = "snps,dwmac-mdio";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		
 	};
 };	
 
@@ -939,8 +935,6 @@ reserved-memory {
 	snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
 	snps,reset-delays-us = <0 50000 200000>;
-	tx_delay = <0x4>;
-	rx_delay = <0x4>;
 	fixed-link {
 		speed = <1000>;
 		full-duplex;
