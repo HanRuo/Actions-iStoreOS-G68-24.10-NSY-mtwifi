@@ -812,13 +812,6 @@
 			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
-	gmac1 {
-		gmac1m1_sgmii_pins: gmac1m1-sgmii-pins {
-			rockchip,pins =
-			<0 RK_PC0 1 &pcfg_pull_none>,
-			<0 RK_PC1 1 &pcfg_pull_none>;
-		};
-	};
 };
 
 &cpu0 {
@@ -940,7 +933,7 @@
 	snps,reset-active-low;
 	snps,reset-delays-us = <0 50000 200000>;
     pinctrl-names = "default";
-    pinctrl-0 = <&gmac1m1_miim &gmac1m1_sgmii_pins>;
+    pinctrl-0 = <&gmac1m1_miim>;
 	fixed-link {
 		speed = <1000>;
 		full-duplex;
