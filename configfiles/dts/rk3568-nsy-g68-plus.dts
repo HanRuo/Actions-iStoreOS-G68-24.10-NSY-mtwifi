@@ -878,6 +878,8 @@ rtlgsw@0 {
 	reg = <29>;				
 	realtek,id = <29>;
 	cpu_port = <6 7>;
+	realtek,mdio = <&mdio0>;
+	mii-bus = <&mdio0>;
 	//txdelay, rxdelay, mode, ability.force_mode, ability.txpause, ability.rxpause, ability.link, ability.duplex, speed
 	//sgmii,
 	realtek,extif1 = <0 0 11 1 1 1 1 1 2>;
