@@ -79,3 +79,5 @@ cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-nsy-g68-plus.dts target/linux/roc
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu.dtsi
 cp -f $GITHUB_WORKSPACE/configfiles/dts/rk3568-vngpu-rk809.dtsi target/linux/rockchip/dts/rk3568/rk3568-vngpu-rk809.dtsi
 
+# 修复DTS文件Windows换行符(\r)，解决dtc语法错误
+sed -i 's/\r$//' target/linux/rockchip/dts/rk3568/rk3568-nsy-g68-plus.dts
