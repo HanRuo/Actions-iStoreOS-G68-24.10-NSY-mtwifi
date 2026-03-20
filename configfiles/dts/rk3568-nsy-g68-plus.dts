@@ -23,8 +23,8 @@
 	compatible = "nsy,g68-plus", "rockchip,rk3568";
 
 	aliases {
-		ethernet0 = "/ethernet@fe2a0000";
-		ethernet1 = "/ethernet@fe010000";
+		ethernet0 = &gmac0;
+		ethernet1 = &gmac1;
 		mmc0 = &sdhci;
 	};
 
@@ -38,7 +38,7 @@
 		#size-cells = <2>;
 		ranges;
 
-		/* 1. 公共大池子：维持 512MB，作为系统默认，保证 SSD/WiFi 性能 */
+		/* 1. 公共大池子：维持 512MB,作为系统默认，保证 SSD/WiFi 性能 */
 		linux,cma {
 			compatible = "shared-dma-pool";
 			reusable;
@@ -47,7 +47,7 @@
 			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
 		};
 
-		/* 2. 多媒体专属特区：划出 128MB-256MB，不设为 default，防止被 SSD 抢走 */
+		/* 2. 多媒体专属特区：划出 128MB-256MB,不设为 default,防止被 SSD 抢走 */
 		mpp_reserved: mpp-reserved {
 			compatible = "shared-dma-pool";
 			reusable;
@@ -351,7 +351,7 @@
 	rtlgsw@0 {
 		compatible = "realtek,rtl8367s";
 		realtek,id = <0x00>;
-		realtek,mdio = <0x158>;
+		realtek,mdio = <&mdio0>;
 		status = "okay";
 	};
 
@@ -523,139 +523,7 @@
 		clock-output-names = "clk_gmac1_xpcs_mii";
 		compatible = "fixed-clock";
 	};
-	ethernet@fe010000 {
-		assigned-clock-parents = <0x21 0x187 0x21 0xc5>;
-		assigned-clock-rates = <0x00 0x7735940>;
-		assigned-clocks = <0x21 0x189 0x21 0x186>;
-		clock-names = "stmmaceth\0mac_clk_rx\0mac_clk_tx\0clk_mac_refout\0aclk_mac\0pclk_mac\0clk_mac_speed\0ptp_ref\0pclk_xpcs\0clk_xpcs_eee";
-		clock_in_out = "output";
-		clocks = <0x21 0x186 0x21 0x189 0x21 0x189 0x21 0xc7 0x21 0xc3 0x21 0xc4 0x21 0x189 0x21 0xc8 0x21 0xac 0x21 0xab>;
-		compatible = "rockchip,rk3568-gmac\0snps,dwmac-4.20a";
-		interrupt-names = "macirq\0eth_wake_irq";
-		interrupts = <0x00 0x20 0x04 0x00 0x1d 0x04>;
-		phandle = <0x7c>;
-		phy-handle = <0x86>;
-		phy-mode = "rgmii-rxid";
-		pinctrl-0 = <0x81 0x82 0x83 0x84 0x85>;
-		pinctrl-names = "default";
-		reg = <0x00 0xfe010000 0x00 0x10000>;
-		reset-names = "stmmaceth";
-		resets = <0x21 0xec>;
-		rockchip,grf = <0x31>;
-		snps,axi-config = <0x7d>;
-		snps,mixed-burst;
-		snps,mtl-rx-config = <0x7e>;
-		snps,mtl-tx-config = <0x7f>;
-		snps,reset-active-low;
-		snps,reset-delays-us = <0x00 0x4e20 0x186a0>;
-		snps,reset-gpio = <0x80 0x09 0x01>;
-		snps,tso;
-		status = "okay";
-		tx_delay = <0x4f>;
-
-		mdio {
-			#address-cells = <0x01>;
-			#size-cells = <0x00>;
-			compatible = "snps,dwmac-mdio";
-
-			phy@0 {
-				compatible = "ethernet-phy-ieee802.3-c22";
-				phandle = <0x86>;
-				reg = <0x00>;
-			};
-		};
-
-		rx-queues-config {
-			phandle = <0x7e>;
-			snps,rx-queues-to-use = <0x01>;
-
-			queue0 {
-			};
-		};
-
-		stmmac-axi-config {
-			phandle = <0x7d>;
-			snps,blen = <0x00 0x00 0x00 0x00 0x10 0x08 0x04>;
-			snps,rd_osr_lmt = <0x08>;
-			snps,wr_osr_lmt = <0x04>;
-		};
-
-		tx-queues-config {
-			phandle = <0x7f>;
-			snps,tx-queues-to-use = <0x01>;
-
-			queue0 {
-			};
-		};
-	};
-
-	ethernet@fe2a0000 {
-		assigned-clock-parents = <0x21 0x183 0x21 0xb6>;
-		assigned-clock-rates = <0x00 0x7735940>;
-		assigned-clocks = <0x21 0x185 0x21 0x182>;
-		clock-names = "stmmaceth\0mac_clk_rx\0mac_clk_tx\0clk_mac_refout\0aclk_mac\0pclk_mac\0clk_mac_speed\0ptp_ref\0pclk_xpcs\0clk_xpcs_eee";
-		clock_in_out = "output";
-		clocks = <0x21 0x182 0x21 0x185 0x21 0x185 0x21 0xb8 0x21 0xb4 0x21 0xb5 0x21 0x185 0x21 0xb9 0x21 0xac 0x21 0xab>;
-		compatible = "rockchip,rk3568-gmac\0snps,dwmac-4.20a";
-		interrupt-names = "macirq\0eth_wake_irq";
-		interrupts = <0x00 0x1b 0x04 0x00 0x18 0x04>;
-		phandle = <0xba>;
-		phy-mode = "rgmii-rxid";
-		pinctrl-0 = <0xbe 0xbf 0xc0 0xc1 0xc2>;
-		pinctrl-names = "default";
-		reg = <0x00 0xfe2a0000 0x00 0x10000>;
-		reset-names = "stmmaceth";
-		resets = <0x21 0xd7>;
-		rockchip,grf = <0x31>;
-		snps,axi-config = <0xbb>;
-		snps,mixed-burst;
-		snps,mtl-rx-config = <0xbc>;
-		snps,mtl-tx-config = <0xbd>;
-		snps,reset-active-low;
-		snps,reset-delays-us = <0x00 0x4e20 0x186a0>;
-		snps,reset-gpio = <0x80 0x08 0x01>;
-		snps,tso;
-		status = "okay";
-		tx_delay = <0x3c>;
-
-		fixed-link {
-			full-duplex;
-			pause;
-			speed = <0x3e8>;
-		};
-
-		mdio {
-			#address-cells = <0x01>;
-			#size-cells = <0x00>;
-			compatible = "snps,dwmac-mdio";
-			phandle = <0x158>;
-		};
-
-		rx-queues-config {
-			phandle = <0xbc>;
-			snps,rx-queues-to-use = <0x01>;
-
-			queue0 {
-			};
-		};
-
-		stmmac-axi-config {
-			phandle = <0xbb>;
-			snps,blen = <0x00 0x00 0x00 0x00 0x10 0x08 0x04>;
-			snps,rd_osr_lmt = <0x08>;
-			snps,wr_osr_lmt = <0x04>;
-		};
-
-		tx-queues-config {
-			phandle = <0xbd>;
-			snps,tx-queues-to-use = <0x01>;
-
-			queue0 {
-			};
-		};
-	};
-
-	external-gmac0-clock {
+    external-gmac0-clock {
 		#clock-cells = <0x00>;
 		clock-frequency = <0x7735940>;
 		clock-output-names = "gmac0_clkin";
@@ -927,58 +795,48 @@
 		};
 	};
 	gmac0 {
-
-		gmac0-miim {
-			phandle = <0xbe>;
+		gmac0_miim: gmac0-miim {
 			rockchip,pins = <0x02 0x13 0x02 0x131 0x02 0x14 0x02 0x131>;
 		};
 
-		gmac0-rgmii-bus {
-			phandle = <0xc2>;
+		gmac0_rgmii_bus: gmac0-rgmii-bus {
 			rockchip,pins = <0x02 0x03 0x02 0x131 0x02 0x04 0x02 0x131 0x02 0x06 0x02 0x134 0x02 0x07 0x02 0x134>;
 		};
 
-		gmac0-rgmii-clk {
-			phandle = <0xc1>;
+		gmac0_rgmii_clk: gmac0-rgmii-clk {
 			rockchip,pins = <0x02 0x05 0x02 0x131 0x02 0x08 0x02 0x135>;
 		};
 
-		gmac0-rx-bus2 {
-			phandle = <0xc0>;
+		gmac0_rx_bus2: gmac0-rx-bus2 {
 			rockchip,pins = <0x02 0x0e 0x01 0x131 0x02 0x0f 0x02 0x131 0x02 0x10 0x02 0x131>;
 		};
 
-		gmac0-tx-bus2 {
-			phandle = <0xbf>;
+		gmac0_tx_bus2: gmac0-tx-bus2 {
 			rockchip,pins = <0x02 0x0b 0x01 0x134 0x02 0x0c 0x01 0x134 0x02 0x0d 0x01 0x131>;
 		};
 	};
 
+	/* GMAC1 引脚配置 修正：删除phandle，添加标准标签 */
 	gmac1 {
-
-		gmac1m1-miim {
-			phandle = <0x81>;
+		gmac1m1_miim: gmac1m1-miim {
 			rockchip,pins = <0x04 0x0e 0x03 0x131 0x04 0x0f 0x03 0x131>;
 		};
 
-		gmac1m1-rgmii-bus {
-			phandle = <0x85>;
+		gmac1m1_rgmii_bus: gmac1m1-rgmii-bus {
 			rockchip,pins = <0x04 0x01 0x03 0x131 0x04 0x02 0x03 0x131 0x03 0x1e 0x03 0x134 0x03 0x1f 0x03 0x134>;
 		};
 
-		gmac1m1-rgmii-clk {
-			phandle = <0x84>;
+		gmac1m1_rgmii_clk: gmac1m1-rgmii-clk {
 			rockchip,pins = <0x04 0x03 0x03 0x131 0x04 0x00 0x03 0x135>;
 		};
 
-		gmac1m1-rx-bus2 {
-			phandle = <0x83>;
+		gmac1m1_rx_bus2: gmac1m1-rx-bus2 {
 			rockchip,pins = <0x04 0x07 0x03 0x131 0x04 0x08 0x03 0x131 0x04 0x09 0x03 0x131>;
 		};
 
-		gmac1m1-tx-bus2 {
-			phandle = <0x82>;
+		gmac1m1_tx_bus2: gmac1m1-tx-bus2 {
 			rockchip,pins = <0x04 0x04 0x03 0x134 0x04 0x05 0x03 0x134 0x04 0x06 0x03 0x131>;
+		};
 	};
 };
 
@@ -1051,6 +909,125 @@
 		rockchip,perst-inactive-ms = <500>;
 		status = "okay";
 };
+
+&gmac0 {
+	assigned-clock-parents = <0x21 0x183 0x21 0xb6>;
+	assigned-clock-rates = <0x00 0x7735940>;
+	assigned-clocks = <0x21 0x185 0x21 0x182>;
+	clock-names = "stmmaceth\0mac_clk_rx\0mac_clk_tx\0clk_mac_refout\0aclk_mac\0pclk_mac\0clk_mac_speed\0ptp_ref\0pclk_xpcs\0clk_xpcs_eee";
+	clock_in_out = "output";
+	clocks = <0x21 0x182 0x21 0x185 0x21 0x185 0x21 0xb8 0x21 0xb4 0x21 0xb5 0x21 0x185 0x21 0xb9 0x21 0xac 0x21 0xab>;
+	compatible = "rockchip,rk3568-gmac\0snps,dwmac-4.20a";
+	interrupt-names = "macirq\0eth_wake_irq";
+	interrupts = <0x00 0x1b 0x04 0x00 0x18 0x04>;
+	phy-mode = "rgmii-rxid";
+	/* 修正：硬编码phandle替换为标准标签引用 */
+	pinctrl-0 = <&gmac0_miim &gmac0_tx_bus2 &gmac0_rx_bus2 &gmac0_rgmii_clk &gmac0_rgmii_bus>;
+	pinctrl-names = "default";
+	reg = <0x00 0xfe2a0000 0x00 0x10000>;
+	reset-names = "stmmaceth";
+	resets = <0x21 0xd7>;
+	rockchip,grf = <0x31>;
+	snps,axi-config = <&gmac0_stmmac_axi_config>;
+	snps,mixed-burst;
+	snps,mtl-rx-config = <&gmac0_rx_queues_config>;
+	snps,mtl-tx-config = <&gmac0_tx_queues_config>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0x00 0x4e20 0x186a0>;
+	/* 修正：规范GPIO写法，不工作可改回<0x80 0x08 0x01> */
+	snps,reset-gpio = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
+	snps,tso;
+	status = "okay";
+	tx_delay = <0x3c>;
+
+	fixed-link {
+		full-duplex;
+		pause;
+		speed = <1000>;
+	};
+
+	mdio0: mdio {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "snps,dwmac-mdio";
+	};
+
+	/* 内部配置节点标签化 */
+	gmac0_rx_queues_config: rx-queues-config {
+		snps,rx-queues-to-use = <0x01>;
+		queue0 { };
+	};
+
+	gmac0_stmmac_axi_config: stmmac-axi-config {
+		snps,blen = <0x00 0x00 0x00 0x00 0x10 0x08 0x04>;
+		snps,rd_osr_lmt = <0x08>;
+		snps,wr_osr_lmt = <0x04>;
+	};
+
+	gmac0_tx_queues_config: tx-queues-config {
+		snps,tx-queues-to-use = <0x01>;
+		queue0 { };
+	};
+};
+
+&gmac1 {
+	assigned-clock-parents = <0x21 0x187 0x21 0xc5>;
+	assigned-clock-rates = <0x00 0x7735940>;
+	assigned-clocks = <0x21 0x189 0x21 0x186>;
+	clock-names = "stmmaceth\0mac_clk_rx\0mac_clk_tx\0clk_mac_refout\0aclk_mac\0pclk_mac\0clk_mac_speed\0ptp_ref\0pclk_xpcs\0clk_xpcs_eee";
+	clock_in_out = "output";
+	clocks = <0x21 0x186 0x21 0x189 0x21 0x189 0x21 0xc7 0x21 0xc3 0x21 0xc4 0x21 0x189 0x21 0xc8 0x21 0xac 0x21 0xab>;
+	compatible = "rockchip,rk3568-gmac\0snps,dwmac-4.20a";
+	interrupt-names = "macirq\0eth_wake_irq";
+	interrupts = <0x00 0x20 0x04 0x00 0x1d 0x04>;
+	phy-mode = "rgmii-rxid";
+	pinctrl-0 = <&gmac1m1_miim &gmac1m1_tx_bus2 &gmac1m1_rx_bus2 &gmac1m1_rgmii_clk &gmac1m1_rgmii_bus>;
+	pinctrl-names = "default";
+	reg = <0x00 0xfe010000 0x00 0x10000>;
+	reset-names = "stmmaceth";
+	resets = <0x21 0xec>;
+	rockchip,grf = <0x31>;
+	snps,axi-config = <&gmac1_stmmac_axi_config>;
+	snps,mixed-burst;
+	snps,mtl-rx-config = <&gmac1_rx_queues_config>;
+	snps,mtl-tx-config = <&gmac1_tx_queues_config>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0x00 0x4e20 0x186a0>;
+	/* 修正：规范GPIO写法，不工作可改回<0x80 0x09 0x01> */
+	snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
+	snps,tso;
+	status = "okay";
+	tx_delay = <0x4f>;
+
+	fixed-link {
+		full-duplex;
+		pause;
+		speed = <1000>;
+	};
+
+	mdio {
+		#address-cells = <0x01>;
+		#size-cells = <0x00>;
+		compatible = "snps,dwmac-mdio";
+	};
+
+	gmac1_rx_queues_config: rx-queues-config {
+		snps,rx-queues-to-use = <0x01>;
+		queue0 { };
+	};
+
+	gmac1_stmmac_axi_config: stmmac-axi-config {
+		snps,blen = <0x00 0x00 0x00 0x00 0x10 0x08 0x04>;
+		snps,rd_osr_lmt = <0x08>;
+		snps,wr_osr_lmt = <0x04>;
+	};
+
+	gmac1_tx_queues_config: tx-queues-config {
+		snps,tx-queues-to-use = <0x01>;
+		queue0 { };
+	};
+};
+
 
 
 &pipe_phy_grf1 {
