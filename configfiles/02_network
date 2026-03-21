@@ -42,10 +42,8 @@ rockchip_setup_interfaces()
 		;;
 	nsy,g68-plus|\
 	bdy,g18-pro)
-	ucidef_add_switch "switch0" \
-		"4:wan" "7t@eth0"  // WAN口port4 → 交换机port7 → eth0(GMAC0/RGMII)
-	ucidef_add_switch_vlan "switch0" "1" \
-		"0:lan" "1:lan" "2:lan" "3:lan" "6t@eth1"  // LAN口port0-3 → 交换机port6 → eth1(GMAC1/SGMII)
+		ucidef_add_switch "switch0" \
+			"0:lan" "1:lan" "2:lan" "3:lan" "4:wan" "7t@eth0"
 		;;
 	nsy,g16-plus)
 		ucidef_add_switch "switch0" \
