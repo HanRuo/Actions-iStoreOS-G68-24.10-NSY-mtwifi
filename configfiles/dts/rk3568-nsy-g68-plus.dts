@@ -30,7 +30,7 @@
 
 	chosen: chosen {
 		stdout-path = "serial2:1500000n8";
-		bootargs = "earlycon=uart8250,mmio32,0xfe660000 console=ttyFI0 rootwait clk_ignore_unused ignore_loglevel stmmac.debug=16 loglevel=7";
+		bootargs = "earlycon=uart8250,mmio32,0xfe660000 console=ttyFI0 rootwait";
 	};
 
 reserved-memory {
@@ -895,7 +895,6 @@ reserved-memory {
 &gmac0 {
 	status = "okay";
 	phy-mode = "rgmii";
-	rockchip,grf = <&grf>;
 	snps,reset-gpio = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
 	snps,reset-delays-us = <0 20000 100000>;
@@ -924,24 +923,22 @@ reserved-memory {
 &combphy1 {
 	rockchip,sgmii-mac-sel = <1>;
 	status = "okay";
-	rockchip,init-delay-ms = <500>;
 };
 
 &xpcs {
-	status = "okay";
+	status = "disabled";
 };
 
 &gmac1 {
-	assigned-clocks = <&cru SCLK_GMAC1_RX_TX>;
-	assigned-clock-parents = <&gmac1_xpcsclk>;
-	rockchip,grf = <&grf>;
-	status = "okay";
+	status = "disabled";
 	phy-mode = "sgmii";
-	rockchip,pipegrf = <&pipe_phy_grf1>;
+	rockchip,pipegrf = <&pipegrf>;
 	rockchip,xpcs = <&xpcs>;
 	//snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
 	//snps,reset-active-low;
 	//snps,reset-delays-us = <0 20000 100000>;
+	assigned-clocks = <&cru SCLK_GMAC1_RX_TX>;
+	assigned-clock-parents = <&gmac1_xpcsclk>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac1m1_miim>;
 	power-domains = <&power RK3568_PD_PIPE>;
