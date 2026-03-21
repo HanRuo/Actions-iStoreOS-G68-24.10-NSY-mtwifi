@@ -23,14 +23,14 @@
 	compatible = "nsy,g68-plus", "rockchip,rk3568";
 
 	aliases {
-		ethernet0 = &gmac1;
-		ethernet1 = &gmac0;
+		ethernet0 = &gmac0;
+		ethernet1 = &gmac1;
 		mmc0 = &sdhci;
 	};
 
 	chosen: chosen {
 		stdout-path = "serial2:1500000n8";
-		bootargs = "earlycon=uart8250,mmio32,0xfe660000 console=ttyFI0 rootwait";
+		bootargs = "earlycon=uart8250,mmio32,0xfe660000 console=ttyFI0 rootwait clk_ignore_unused ignore_loglevel stmmac.debug=16 loglevel=7";
 	};
 
 reserved-memory {
@@ -924,7 +924,7 @@ reserved-memory {
 &combphy1 {
 	rockchip,sgmii-mac-sel = <1>;
 	status = "okay";
-	rockchip,init-delay-ms = <100>;
+	rockchip,init-delay-ms = <500>;
 };
 
 &xpcs {
@@ -937,7 +937,7 @@ reserved-memory {
 	rockchip,grf = <&grf>;
 	status = "okay";
 	phy-mode = "sgmii";
-	rockchip,pipegrf = <&pipegrf>;
+	rockchip,pipegrf = <&pipe_phy_grf1>;
 	rockchip,xpcs = <&xpcs>;
 	//snps,reset-gpio = <&gpio2 RK_PC2 GPIO_ACTIVE_LOW>;
 	//snps,reset-active-low;
