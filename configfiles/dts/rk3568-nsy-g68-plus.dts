@@ -944,7 +944,7 @@ reserved-memory {
 	//snps,reset-delays-us = <0 20000 100000>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac1m1_miim>;
-	power-domains = <&power RK3568_PD_GMAC>, <&power RK3568_PD_PIPE>;
+	power-domains = <&power RK3568_PD_PIPE>;
 	phys = <&combphy1 PHY_TYPE_SGMII>;
 	fixed-link {
 		speed = <1000>;
